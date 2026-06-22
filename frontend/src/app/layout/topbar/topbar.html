@@ -5,7 +5,7 @@
 
   <span class="wedding-title">
     <mat-icon class="heart-icon">favorite</mat-icon>
-    {{ user()?.name ?? 'Wedding Planner' }}
+    {{ user()?.name ?? 'IDoList' }}
     @if (user()?.weddingDate) {
       <span class="wedding-date"> · {{ user()!.weddingDate | date:'d MMM yyyy' }}</span>
     }

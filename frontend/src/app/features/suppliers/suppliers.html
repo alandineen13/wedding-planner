@@ -95,9 +95,6 @@
                 <div class="supplier-icon"><mat-icon>storefront</mat-icon></div>
                 <div>
                   <span class="name">{{ s.name }}</span>
-                  @for (star of renderStars(s.rating); track $index) {
-                    <mat-icon class="star-icon">{{ star }}</mat-icon>
-                  }
                 </div>
               </div>
             </td>

@@ -63,7 +63,7 @@ export class GuestsComponent {
     return guests;
   });
 
-  readonly displayedColumns = ['name', 'email', 'rsvpStatus', 'meal', 'plusOne', 'side', 'group', 'actions'];
+  readonly displayedColumns = ['name', 'email', 'rsvpStatus', 'dietary', 'plusOne', 'side', 'group', 'actions'];
 
   openAddDialog(): void {
     const ref = this.dialog.open(GuestFormComponent, { width: '600px', data: null });

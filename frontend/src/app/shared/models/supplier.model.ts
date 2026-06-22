@@ -31,6 +31,5 @@ export interface Supplier {
   balanceDue?: number;
   balanceDueDate?: string;
   notes?: string;
-  rating?: number;
   createdAt: string;
 }
