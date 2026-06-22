@@ -74,13 +74,16 @@ export class BudgetComponent {
       notes: this.formData.notes || undefined,
     };
     if (this.editingId()) {
-      this.budgetSvc.update(this.editingId()!, item);
-      this.snackBar.open('Item updated', 'Close', { duration: 2000 });
+      this.budgetSvc.update(this.editingId()!, item).subscribe({
+        next: () => { this.snackBar.open('Item updated', 'Close', { duration: 2000 }); this.resetForm(); },
+        error: () => this.snackBar.open('Failed to save item', 'Close', { duration: 2000 }),
+      });
     } else {
-      this.budgetSvc.add(item);
-      this.snackBar.open('Budget item added', 'Close', { duration: 2000 });
+      this.budgetSvc.add(item).subscribe({
+        next: () => { this.snackBar.open('Budget item added', 'Close', { duration: 2000 }); this.resetForm(); },
+        error: () => this.snackBar.open('Failed to add item', 'Close', { duration: 2000 }),
+      });
     }
-    this.resetForm();
   }
 
   editItem(item: BudgetItem): void {
@@ -98,7 +101,9 @@ export class BudgetComponent {
 
   deleteItem(id: string): void {
     if (confirm('Remove this budget item?')) {
-      this.budgetSvc.delete(id);
+      this.budgetSvc.delete(id).subscribe({
+        error: () => this.snackBar.open('Failed to delete item', 'Close', { duration: 2000 }),
+      });
     }
   }
 

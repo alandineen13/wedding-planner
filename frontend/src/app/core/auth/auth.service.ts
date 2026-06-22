@@ -1,53 +1,45 @@
-import { Injectable, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { User, LoginCredentials, AuthResponse } from '../../shared/models/user.model';
-
-const MOCK_USER: User = {
-  id: '1',
-  email: 'couple@wedding.com',
-  name: 'Laura & Alan',
-  weddingDate: '2026-09-04',
-  partnerName: 'Alan Dineen',
-  venueName: 'Hotel and Gardens',
-};
+import { environment } from '../../../environments/environment';
 
 const TOKEN_KEY = 'wp_token';
-const USER_KEY = 'wp_user';
+const USER_KEY  = 'wp_user';
+const API       = `${environment.apiUrl}/auth`;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private _user = signal<User | null>(this.loadUser());
+  private http = inject(HttpClient);
+
+  private _user  = signal<User | null>(this.loadUser());
   private _token = signal<string | null>(this.loadToken());
 
-  readonly user = this._user.asReadonly();
+  readonly user            = this._user.asReadonly();
   readonly isAuthenticated = computed(() => this._token() !== null);
 
-  constructor(private router: Router) {}
-
   login(credentials: LoginCredentials): Promise<AuthResponse> {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (
-          credentials.email === 'couple@wedding.com' &&
-          credentials.password === 'wedding2025'
-        ) {
-          const token = 'mock-jwt-token-' + Date.now();
-          const response: AuthResponse = { token, user: MOCK_USER };
-          this.setSession(response);
-          resolve(response);
-        } else {
-          reject(new Error('Invalid email or password'));
-        }
-      }, 600);
-    });
+    return firstValueFrom(
+      this.http.post<AuthResponse>(`${API}/login`, credentials).pipe(
+        tap(r => this.setSession(r))
+      )
+    );
+  }
+
+  register(data: { email: string; password: string; name: string }): Promise<AuthResponse> {
+    return firstValueFrom(
+      this.http.post<AuthResponse>(`${API}/register`, data).pipe(
+        tap(r => this.setSession(r))
+      )
+    );
   }
 
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    this._token.set(null);
-    this._user.set(null);
-    this.router.navigate(['/']);
+    // Full page reload clears all singleton service state (signals, cached data).
+    window.location.href = '/';
   }
 
   getToken(): string | null {

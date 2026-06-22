@@ -1,0 +1,72 @@
+<div class="login-container">
+  <div class="login-left">
+    <div class="login-left-content">
+      <mat-icon class="brand-heart">favorite</mat-icon>
+      <h1>WedPlanner</h1>
+      <p>Start planning your perfect day. Manage guests, budget, seating, suppliers, and more — all in one place.</p>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <mat-card class="login-card">
+      <mat-card-header>
+        <mat-card-title>Create an account</mat-card-title>
+        <mat-card-subtitle>Start planning your wedding today</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Full Name</mat-label>
+            <input matInput type="text" [ngModel]="name()" (ngModelChange)="name.set($event)" name="name" required autocomplete="name" />
+            <mat-icon matPrefix>person</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" [ngModel]="email()" (ngModelChange)="email.set($event)" name="email" required autocomplete="email" />
+            <mat-icon matPrefix>email</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input matInput [type]="hidePassword() ? 'password' : 'text'" [ngModel]="password()" (ngModelChange)="password.set($event)" name="password" required autocomplete="new-password" />
+            <mat-icon matPrefix>lock</mat-icon>
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword.set(!hidePassword())">
+              <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-hint>Minimum 8 characters</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Confirm Password</mat-label>
+            <input matInput [type]="hideConfirm() ? 'password' : 'text'" [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)" name="confirmPassword" required autocomplete="new-password" />
+            <mat-icon matPrefix>lock_outline</mat-icon>
+            <button mat-icon-button matSuffix type="button" (click)="hideConfirm.set(!hideConfirm())">
+              <mat-icon>{{ hideConfirm() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </mat-form-field>
+
+          @if (error()) {
+            <p class="error-message">
+              <mat-icon>error_outline</mat-icon> {{ error() }}
+            </p>
+          }
+
+          <button mat-raised-button color="primary" type="submit" class="full-width login-btn" [disabled]="loading()">
+            @if (loading()) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Create Account
+            }
+          </button>
+        </form>
+
+        <p class="switch-link">
+          Already have an account? <a routerLink="/login">Sign in</a>
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

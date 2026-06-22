@@ -10,30 +10,44 @@ import { MatCardModule } from '@angular/material/card';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register',
   standalone: true,
   imports: [FormsModule, RouterLink, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatCardModule],
-  templateUrl: './login.html',
-  styleUrl: './login.css',
+  templateUrl: './register.html',
+  styleUrl: './register.css',
 })
-export class LoginComponent {
+export class RegisterComponent {
+  name = signal('');
   email = signal('');
   password = signal('');
+  confirmPassword = signal('');
   loading = signal(false);
   error = signal('');
   hidePassword = signal(true);
+  hideConfirm = signal(true);
 
   private auth = inject(AuthService);
 
   async onSubmit(): Promise<void> {
-    if (!this.email() || !this.password()) return;
+    if (!this.name() || !this.email() || !this.password()) return;
+
+    if (this.password() !== this.confirmPassword()) {
+      this.error.set('Passwords do not match');
+      return;
+    }
+
+    if (this.password().length < 8) {
+      this.error.set('Password must be at least 8 characters');
+      return;
+    }
+
     this.loading.set(true);
     this.error.set('');
     try {
-      await this.auth.login({ email: this.email(), password: this.password() });
+      await this.auth.register({ name: this.name(), email: this.email(), password: this.password() });
       window.location.href = '/dashboard';
     } catch (err: any) {
-      this.error.set(err.error?.message ?? err.message ?? 'Login failed');
+      this.error.set(err.error?.message ?? err.message ?? 'Registration failed');
     } finally {
       this.loading.set(false);
     }

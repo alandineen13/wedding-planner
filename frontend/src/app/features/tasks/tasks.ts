@@ -89,13 +89,16 @@ export class TasksComponent {
       notes: this.formData.notes || undefined,
     };
     if (this.editingId()) {
-      this.taskSvc.update(this.editingId()!, task);
-      this.snackBar.open('Task updated', 'Close', { duration: 2000 });
+      this.taskSvc.update(this.editingId()!, task).subscribe({
+        next: () => { this.snackBar.open('Task updated', 'Close', { duration: 2000 }); this.resetForm(); },
+        error: () => this.snackBar.open('Failed to save task', 'Close', { duration: 2000 }),
+      });
     } else {
-      this.taskSvc.add(task);
-      this.snackBar.open('Task added', 'Close', { duration: 2000 });
+      this.taskSvc.add(task).subscribe({
+        next: () => { this.snackBar.open('Task added', 'Close', { duration: 2000 }); this.resetForm(); },
+        error: () => this.snackBar.open('Failed to add task', 'Close', { duration: 2000 }),
+      });
     }
-    this.resetForm();
   }
 
   editTask(task: Task): void {
@@ -114,13 +117,15 @@ export class TasksComponent {
 
   deleteTask(id: string): void {
     if (confirm('Delete this task?')) {
-      this.taskSvc.delete(id);
+      this.taskSvc.delete(id).subscribe({
+        error: () => this.snackBar.open('Failed to delete task', 'Close', { duration: 2000 }),
+      });
     }
   }
 
   toggleStatus(task: Task): void {
     const next: TaskStatus = task.status === 'completed' ? 'todo' : 'completed';
-    this.taskSvc.updateStatus(task.id, next);
+    this.taskSvc.updateStatus(task.id, next).subscribe();
   }
 
   resetForm(): void {
