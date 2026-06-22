@@ -1,7 +1,18 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanMatchFn, Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { AuthService } from './core/auth/auth.service';
+
+const publicOnly: CanMatchFn = () => !inject(AuthService).isAuthenticated();
 
 export const routes: Routes = [
+  // Public landing — only matched when not authenticated.
+  // Authenticated users fall through to the shell route below.
+  {
+    path: '',
+    canMatch: [publicOnly],
+    loadComponent: () => import('./features/landing/landing').then(m => m.LandingComponent),
+  },
   {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login').then(m => m.LoginComponent),
