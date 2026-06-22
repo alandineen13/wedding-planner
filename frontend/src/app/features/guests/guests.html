@@ -1,0 +1,194 @@
+<div class="guests-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><mat-icon>people</mat-icon> Guest List</h1>
+      <p class="page-subtitle">{{ stats().total }} guests · {{ stats().confirmed }} confirmed · {{ stats().pending }} pending</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="openAddDialog()">
+      <mat-icon>person_add</mat-icon> Add Guest
+    </button>
+  </div>
+
+  <!-- Stats Strip -->
+  <div class="stats-strip">
+    <div class="stat-pill confirmed">
+      <mat-icon>check_circle</mat-icon>
+      <span>{{ stats().confirmed }} Confirmed</span>
+    </div>
+    <div class="stat-pill declined">
+      <mat-icon>cancel</mat-icon>
+      <span>{{ stats().declined }} Declined</span>
+    </div>
+    <div class="stat-pill pending">
+      <mat-icon>schedule</mat-icon>
+      <span>{{ stats().pending }} Pending</span>
+    </div>
+    <div class="stat-pill maybe">
+      <mat-icon>help</mat-icon>
+      <span>{{ stats().maybe }} Maybe</span>
+    </div>
+    <div class="stat-pill plus-ones">
+      <mat-icon>group_add</mat-icon>
+      <span>{{ stats().plusOnes }} Plus-Ones</span>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search guests</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Name, email, group..." />
+          @if (searchQuery()) {
+            <button matSuffix mat-icon-button (click)="searchQuery.set('')"><mat-icon>close</mat-icon></button>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>RSVP Status</mat-label>
+          <mat-select [ngModel]="rsvpFilter()" (ngModelChange)="rsvpFilter.set($event)">
+            <mat-option value="">All</mat-option>
+            <mat-option value="confirmed">Confirmed</mat-option>
+            <mat-option value="declined">Declined</mat-option>
+            <mat-option value="pending">Pending</mat-option>
+            <mat-option value="maybe">Maybe</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Side</mat-label>
+          <mat-select [ngModel]="sideFilter()" (ngModelChange)="sideFilter.set($event)">
+            <mat-option value="">All</mat-option>
+            <mat-option value="bride">Bride's side</mat-option>
+            <mat-option value="groom">Groom's side</mat-option>
+            <mat-option value="both">Both</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        @if (searchQuery() || rsvpFilter() || sideFilter()) {
+          <button mat-stroked-button (click)="clearFilters()">
+            <mat-icon>filter_alt_off</mat-icon> Clear
+          </button>
+        }
+      </div>
+      <p class="result-count">Showing {{ filteredGuests().length }} of {{ stats().total }} guests</p>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Table -->
+  <mat-card class="table-card">
+    <mat-card-content>
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="filteredGuests()" class="guests-table">
+
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let guest">
+              <div class="guest-name-cell">
+                <div class="guest-avatar">{{ guest.firstName[0] }}{{ guest.lastName[0] }}</div>
+                <div>
+                  <span class="guest-name">{{ guest.firstName }} {{ guest.lastName }}</span>
+                  @if (guest.phone) {
+                    <span class="guest-phone">{{ guest.phone }}</span>
+                  }
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let guest">
+              <span class="text-muted">{{ guest.email ?? '—' }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="rsvpStatus">
+            <th mat-header-cell *matHeaderCellDef>RSVP</th>
+            <td mat-cell *matCellDef="let guest">
+              <span [class]="'rsvp-badge ' + getRsvpColor(guest.rsvpStatus)">
+                <mat-icon>{{ getRsvpIcon(guest.rsvpStatus) }}</mat-icon>
+                {{ guest.rsvpStatus | titlecase }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="meal">
+            <th mat-header-cell *matHeaderCellDef>Meal</th>
+            <td mat-cell *matCellDef="let guest">
+              @if (guest.mealPreference) {
+                <span class="meal-chip">{{ guest.mealPreference | titlecase }}</span>
+              } @else {
+                <span class="text-muted">—</span>
+              }
+              @if (guest.dietaryRequirements) {
+                <mat-icon class="dietary-icon" [matTooltip]="guest.dietaryRequirements">warning</mat-icon>
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="plusOne">
+            <th mat-header-cell *matHeaderCellDef>+1</th>
+            <td mat-cell *matCellDef="let guest">
+              @if (guest.plusOneAllowed) {
+                @if (guest.plusOne) {
+                  <span class="plus-one-chip confirmed" [matTooltip]="guest.plusOne.name">
+                    <mat-icon>person</mat-icon> {{ guest.plusOne.name }}
+                  </span>
+                } @else {
+                  <span class="plus-one-chip allowed"><mat-icon>person_add</mat-icon> Allowed</span>
+                }
+              } @else {
+                <span class="text-muted">No</span>
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="side">
+            <th mat-header-cell *matHeaderCellDef>Side</th>
+            <td mat-cell *matCellDef="let guest">
+              <span [class]="'side-badge ' + guest.side">{{ guest.side | titlecase }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="group">
+            <th mat-header-cell *matHeaderCellDef>Group</th>
+            <td mat-cell *matCellDef="let guest">
+              <span class="text-muted">{{ guest.group ?? '—' }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let guest">
+              <div class="actions-cell">
+                <button mat-icon-button [matTooltip]="'Copy RSVP link'" (click)="copyRsvpLink(guest)">
+                  <mat-icon>link</mat-icon>
+                </button>
+                <button mat-icon-button [matTooltip]="'Edit guest'" (click)="openEditDialog(guest)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button [matTooltip]="'Remove guest'" color="warn" (click)="deleteGuest(guest)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="guest-row"></tr>
+
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
+              <mat-icon>search_off</mat-icon>
+              <p>No guests found matching your filters</p>
+              <button mat-stroked-button (click)="clearFilters()">Clear filters</button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

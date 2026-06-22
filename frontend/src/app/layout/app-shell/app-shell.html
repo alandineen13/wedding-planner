@@ -1,0 +1,14 @@
+<div class="shell-container">
+  <app-sidebar
+    [collapsed]="sidebarCollapsed()"
+    (navItemClicked)="closeMobileMenu()">
+  </app-sidebar>
+
+  <div class="shell-main" [class.sidebar-collapsed]="sidebarCollapsed()">
+    <app-topbar (menuToggled)="toggleSidebar()"></app-topbar>
+
+    <main class="shell-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

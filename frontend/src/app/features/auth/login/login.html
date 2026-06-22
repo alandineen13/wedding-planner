@@ -1,0 +1,56 @@
+<div class="login-container">
+  <div class="login-left">
+    <div class="login-left-content">
+      <mat-icon class="brand-heart">favorite</mat-icon>
+      <h1>WedPlanner</h1>
+      <p>Your complete wedding planning companion. Manage guests, budget, seating, and more — all in one beautiful place.</p>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <mat-card class="login-card">
+      <mat-card-header>
+        <mat-card-title>Welcome back</mat-card-title>
+        <mat-card-subtitle>Sign in to your wedding dashboard</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" [ngModel]="email()" (ngModelChange)="email.set($event)" name="email" required autocomplete="email" />
+            <mat-icon matPrefix>email</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input matInput [type]="hidePassword() ? 'password' : 'text'" [ngModel]="password()" (ngModelChange)="password.set($event)" name="password" required autocomplete="current-password" />
+            <mat-icon matPrefix>lock</mat-icon>
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword.set(!hidePassword())">
+              <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </mat-form-field>
+
+          @if (error()) {
+            <p class="error-message">
+              <mat-icon>error_outline</mat-icon> {{ error() }}
+            </p>
+          }
+
+          <button mat-raised-button color="primary" type="submit" class="full-width login-btn" [disabled]="loading()">
+            @if (loading()) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Sign In
+            }
+          </button>
+        </form>
+
+        <p class="demo-hint">
+          <mat-icon>info</mat-icon>
+          Demo: <strong>couple@wedding.com</strong> / <strong>wedding2025</strong>
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

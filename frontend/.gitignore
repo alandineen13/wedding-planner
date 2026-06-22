@@ -1,0 +1,8 @@
+# Build output
+dist/
+
+# Angular dev cache
+.angular/
+
+# Dependencies
+node_modules/

@@ -1,0 +1,33 @@
+<mat-toolbar class="topbar">
+  <button mat-icon-button (click)="menuToggled.emit()" matTooltip="Toggle menu">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <span class="wedding-title">
+    <mat-icon class="heart-icon">favorite</mat-icon>
+    {{ user()?.name ?? 'Wedding Planner' }}
+    @if (user()?.weddingDate) {
+      <span class="wedding-date"> · {{ user()!.weddingDate | date:'d MMM yyyy' }}</span>
+    }
+  </span>
+
+  <span class="spacer"></span>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" matTooltip="Account">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <div class="user-menu-header">
+      <strong>{{ user()?.name }}</strong>
+      <small>{{ user()?.email }}</small>
+    </div>
+    <mat-divider></mat-divider>
+    <button mat-menu-item routerLink="/settings">
+      <mat-icon>settings</mat-icon> Settings
+    </button>
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon> Sign out
+    </button>
+  </mat-menu>
+</mat-toolbar>

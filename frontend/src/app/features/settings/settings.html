@@ -1,0 +1,69 @@
+<div class="settings-page">
+  <div class="page-header">
+    <h1 class="page-title"><mat-icon>settings</mat-icon> Settings</h1>
+  </div>
+
+  <mat-card class="settings-card">
+    <mat-card-header>
+      <div class="card-title-row">
+        <mat-icon>person</mat-icon>
+        <mat-card-title>Wedding Details</mat-card-title>
+      </div>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Your Name</mat-label>
+          <input matInput [ngModel]="name()" (ngModelChange)="name.set($event)" />
+          <mat-icon matPrefix>person</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Partner's Name</mat-label>
+          <input matInput [ngModel]="partnerName()" (ngModelChange)="partnerName.set($event)" />
+          <mat-icon matPrefix>favorite</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" [ngModel]="email()" (ngModelChange)="email.set($event)" />
+          <mat-icon matPrefix>email</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Wedding Date</mat-label>
+          <input matInput type="date" [ngModel]="weddingDate()" (ngModelChange)="weddingDate.set($event)" />
+          <mat-icon matPrefix>event</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-field">
+          <mat-label>Venue Name</mat-label>
+          <input matInput [ngModel]="venueName()" (ngModelChange)="venueName.set($event)" />
+          <mat-icon matPrefix>location_on</mat-icon>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-raised-button color="primary" (click)="saveProfile()">
+        <mat-icon>save</mat-icon> Save Changes
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card class="settings-card danger-zone">
+    <mat-card-header>
+      <div class="card-title-row">
+        <mat-icon>logout</mat-icon>
+        <mat-card-title>Account</mat-card-title>
+      </div>
+    </mat-card-header>
+    <mat-card-content>
+      <p>Sign out of your wedding dashboard.</p>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-stroked-button color="warn" (click)="logout()">
+        <mat-icon>logout</mat-icon> Sign Out
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

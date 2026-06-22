@@ -1,0 +1,152 @@
+<div class="suppliers-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><mat-icon>storefront</mat-icon> Suppliers</h1>
+      <p class="page-subtitle">{{ suppliers().length }} suppliers · Manage contacts, contracts and payments</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="toggleForm()">
+      <mat-icon>add</mat-icon> Add Supplier
+    </button>
+  </div>
+
+  <mat-form-field appearance="outline" class="search-field">
+    <mat-label>Search suppliers</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Name, category..." />
+  </mat-form-field>
+
+  @if (showForm()) {
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>{{ editingId() ? 'Edit Supplier' : 'Add Supplier' }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-grid">
+          <mat-form-field appearance="outline" class="name-field">
+            <mat-label>Supplier Name *</mat-label>
+            <input matInput [(ngModel)]="formData.name" name="name" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Category</mat-label>
+            <mat-select [(ngModel)]="formData.category" name="category">
+              @for (cat of categories; track cat) {
+                <mat-option [value]="cat">{{ cat | titlecase }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Contact Name</mat-label>
+            <input matInput [(ngModel)]="formData.contactName" name="contactName" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" [(ngModel)]="formData.email" name="email" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Phone</mat-label>
+            <input matInput [(ngModel)]="formData.phone" name="phone" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Website</mat-label>
+            <input matInput [(ngModel)]="formData.website" name="website" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Contract Status</mat-label>
+            <mat-select [(ngModel)]="formData.contractStatus" name="contract">
+              <mat-option value="none">None</mat-option>
+              <mat-option value="pending">Pending</mat-option>
+              <mat-option value="signed">Signed</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Total Cost (€)</mat-label>
+            <input matInput type="number" [(ngModel)]="formData.totalCost" name="totalCost" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Deposit Amount (€)</mat-label>
+            <input matInput type="number" [(ngModel)]="formData.depositAmount" name="deposit" />
+          </mat-form-field>
+          <div class="checkbox-wrap">
+            <mat-checkbox [(ngModel)]="formData.depositPaid" name="depositPaid">Deposit Paid</mat-checkbox>
+          </div>
+          <mat-form-field appearance="outline" class="name-field">
+            <mat-label>Notes</mat-label>
+            <textarea matInput [(ngModel)]="formData.notes" name="notes" rows="2"></textarea>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button (click)="resetForm()">Cancel</button>
+        <button mat-raised-button color="primary" (click)="saveSupplier()" [disabled]="!formData.name">
+          {{ editingId() ? 'Update' : 'Add Supplier' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  }
+
+  <mat-card class="table-card">
+    <mat-card-content>
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="filteredSuppliers()" class="suppliers-table">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Supplier</th>
+            <td mat-cell *matCellDef="let s">
+              <div class="supplier-name-cell">
+                <div class="supplier-icon"><mat-icon>storefront</mat-icon></div>
+                <div>
+                  <span class="name">{{ s.name }}</span>
+                  @for (star of renderStars(s.rating); track $index) {
+                    <mat-icon class="star-icon">{{ star }}</mat-icon>
+                  }
+                </div>
+              </div>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef>Category</th>
+            <td mat-cell *matCellDef="let s">
+              <span class="category-chip">{{ s.category | titlecase }}</span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="contact">
+            <th mat-header-cell *matHeaderCellDef>Contact</th>
+            <td mat-cell *matCellDef="let s">
+              @if (s.contactName) { <span class="contact-name">{{ s.contactName }}</span> }
+              @if (s.email) { <a class="contact-email" [href]="'mailto:' + s.email">{{ s.email }}</a> }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="cost">
+            <th mat-header-cell *matHeaderCellDef>Cost</th>
+            <td mat-cell *matCellDef="let s">
+              @if (s.totalCost) {
+                <span class="cost">{{ s.totalCost | currency:'EUR':'symbol':'1.0-0' }}</span>
+                @if (s.depositPaid) { <span class="deposit-chip">Deposit paid</span> }
+              } @else {
+                <span class="text-muted">—</span>
+              }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="contract">
+            <th mat-header-cell *matHeaderCellDef>Contract</th>
+            <td mat-cell *matCellDef="let s">
+              <span [class]="'contract-badge ' + getContractColor(s.contractStatus)">
+                {{ s.contractStatus | titlecase }}
+              </span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let s">
+              <div class="actions-cell">
+                <button mat-icon-button (click)="editSupplier(s)" matTooltip="Edit"><mat-icon>edit</mat-icon></button>
+                <button mat-icon-button color="warn" (click)="deleteSupplier(s.id)" matTooltip="Delete"><mat-icon>delete</mat-icon></button>
+              </div>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="supplier-row"></tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

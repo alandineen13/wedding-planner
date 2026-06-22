@@ -1,0 +1,209 @@
+/* ── Add table card ──────────────────────────────────────── */
+.add-table-card { margin-bottom: 24px; }
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  align-self: flex-end;
+  padding-bottom: 18px;
+}
+
+/* ── Layout ──────────────────────────────────────────────── */
+.seating-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .seating-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Tables grid ─────────────────────────────────────────── */
+.tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.table-card {
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  border: 2px solid transparent !important;
+}
+
+.table-card:hover { box-shadow: 0 4px 20px rgba(139,74,98,0.25) !important; }
+.table-card.selected { border-color: #8b4a62 !important; }
+
+.table-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.table-shape-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.table-shape-icon mat-icon { font-size: 20px; width: 20px; height: 20px; color: #fff; }
+.table-shape-icon.round        { background: linear-gradient(135deg, #8b4a62, #d4748c); }
+.table-shape-icon.rectangular  { background: linear-gradient(135deg, #2196f3, #64b5f6); }
+.table-shape-icon.oval         { background: linear-gradient(135deg, #9c27b0, #ba68c8); }
+
+.delete-btn { margin-left: auto; }
+
+/* ── Occupancy bar ───────────────────────────────────────── */
+.occupancy-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  margin: 8px 0;
+  overflow: hidden;
+}
+
+.occupancy-fill {
+  height: 100%;
+  background: #8b4a62;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.occupancy-fill.full { background: #ef9a9a; }
+
+/* ── Guest chips inside table card ──────────────────────── */
+.table-guests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.guest-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(139,74,98,0.25);
+  border: 1px solid rgba(232,164,184,0.3);
+  border-radius: 14px;
+  padding: 3px 8px 3px 6px;
+  font-size: 12px;
+  color: #e8a4b8;
+}
+
+.remove-guest-btn {
+  background: none;
+  border: none;
+  color: rgba(232,164,184,0.6);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  margin-left: 2px;
+}
+
+.remove-guest-btn:hover { color: #ef9a9a; }
+
+.empty-seat-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  border: 1px dashed rgba(255,255,255,0.2);
+  font-size: 12px;
+  color: rgba(255,255,255,0.2);
+}
+
+/* ── Unassigned panel ────────────────────────────────────── */
+.unassigned-panel {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 16px;
+  position: sticky;
+  top: 16px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.panel-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: rgba(255,255,255,0.87);
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.panel-header h3 mat-icon { color: #e8a4b8; font-size: 18px; width: 18px; height: 18px; }
+
+.count-badge {
+  background: #8b4a62;
+  color: #fff;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.unassigned-list {
+  max-height: 480px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.unassigned-guest {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.unassigned-guest:last-child { border-bottom: none; }
+
+.guest-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b4a62, #d4748c);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.guest-name { flex: 1; font-size: 13px; color: rgba(255,255,255,0.8); }
+
+.empty-state {
+  text-align: center;
+  padding: 24px 12px;
+  color: rgba(255,255,255,0.35);
+}
+
+.empty-state mat-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+  display: block;
+  margin: 0 auto 8px;
+}
