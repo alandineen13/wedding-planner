@@ -1,0 +1,15 @@
+/* ── Card extras ─────────────────────────────────────────── */
+.settings-card { margin-bottom: 20px; }
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-title-row mat-icon { color: #e8a4b8; }
+
+/* ── Danger zone variant ─────────────────────────────────── */
+.settings-card.danger-zone {
+  border-top: 3px solid rgba(244,67,54,0.4);
+}

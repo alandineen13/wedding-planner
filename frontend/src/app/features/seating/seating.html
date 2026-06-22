@@ -1,0 +1,118 @@
+<div class="seating-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><mat-icon>chair</mat-icon> Seating Planner</h1>
+      <p class="page-subtitle">
+        {{ stats().totalTables }} tables · {{ stats().seatedGuests }} seated · {{ stats().unseatedSeats }} seats free
+      </p>
+    </div>
+    <button mat-raised-button color="primary" (click)="toggleAddTable()">
+      <mat-icon>add</mat-icon> Add Table
+    </button>
+  </div>
+
+  @if (showAddTable()) {
+    <mat-card class="add-table-card">
+      <mat-card-header><mat-card-title>New Table</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Table Name</mat-label>
+            <input matInput [ngModel]="newTableName()" (ngModelChange)="newTableName.set($event)" placeholder="Table 1, Top Table..." />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Capacity</mat-label>
+            <input matInput type="number" [ngModel]="newTableCapacity()" (ngModelChange)="newTableCapacity.set(+$event)" min="2" max="20" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Shape</mat-label>
+            <mat-select [ngModel]="newTableShape()" (ngModelChange)="newTableShape.set($event)">
+              <mat-option value="round">Round</mat-option>
+              <mat-option value="rectangular">Rectangular</mat-option>
+              <mat-option value="oval">Oval</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div class="form-actions">
+            <button mat-raised-button color="primary" (click)="addTable()" [disabled]="!newTableName()">Add Table</button>
+            <button mat-button (click)="showAddTable.set(false)">Cancel</button>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <div class="seating-layout">
+    <div class="tables-grid">
+      @for (table of tables(); track table.id) {
+        <mat-card class="table-card" [class.selected]="selectedTableId() === table.id" (click)="selectTable(table.id)">
+          <mat-card-header>
+            <div class="table-header">
+              <div [class]="'table-shape-icon ' + table.shape">
+                <mat-icon>{{ table.shape === 'rectangular' ? 'table_restaurant' : 'circle' }}</mat-icon>
+              </div>
+              <div>
+                <mat-card-title>{{ table.name }}</mat-card-title>
+                <mat-card-subtitle>{{ table.guestIds.length }}/{{ table.capacity }} seats</mat-card-subtitle>
+              </div>
+              <button mat-icon-button class="delete-btn" (click)="$event.stopPropagation(); deleteTable(table.id)" matTooltip="Delete table">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="occupancy-bar">
+              <div class="occupancy-fill" [style.width.%]="getOccupancyPct(table)" [class.full]="table.guestIds.length >= table.capacity"></div>
+            </div>
+            <div class="table-guests">
+              @for (guest of getTableGuests(table); track guest.id) {
+                <span class="guest-chip" [matTooltip]="guest.firstName + ' ' + guest.lastName">
+                  {{ guest.firstName[0] }}{{ guest.lastName[0] }}
+                  <button class="remove-guest-btn" (click)="$event.stopPropagation(); removeFromTable(guest.id)" matTooltip="Remove">×</button>
+                </span>
+              }
+              @for (seat of getEmptySeats(table); track $index) {
+                <span class="empty-seat-chip">—</span>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+
+    <div class="unassigned-panel">
+      <div class="panel-header">
+        <h3><mat-icon>group</mat-icon> Unassigned Confirmed Guests</h3>
+        <span class="count-badge">{{ unassignedGuests().length }}</span>
+      </div>
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search guests</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [ngModel]="guestSearchQuery()" (ngModelChange)="guestSearchQuery.set($event)" />
+      </mat-form-field>
+      <div class="unassigned-list">
+        @if (unassignedGuests().length === 0) {
+          <div class="empty-state">
+            <mat-icon>celebration</mat-icon>
+            <p>All confirmed guests are seated!</p>
+          </div>
+        }
+        @for (guest of unassignedGuests(); track guest.id) {
+          <div class="unassigned-guest">
+            <div class="guest-avatar">{{ guest.firstName[0] }}{{ guest.lastName[0] }}</div>
+            <span class="guest-name">{{ guest.firstName }} {{ guest.lastName }}</span>
+            <button mat-icon-button [matMenuTriggerFor]="tableMenu" matTooltip="Assign to table">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+            <mat-menu #tableMenu>
+              @for (table of tables(); track table.id) {
+                <button mat-menu-item (click)="assignGuest(table.id, guest.id)" [disabled]="table.guestIds.length >= table.capacity">
+                  {{ table.name }} ({{ table.guestIds.length }}/{{ table.capacity }})
+                </button>
+              }
+            </mat-menu>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

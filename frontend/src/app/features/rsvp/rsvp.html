@@ -1,0 +1,153 @@
+<div class="rsvp-page">
+  <div class="rsvp-header">
+    <mat-icon class="heart-icon">favorite</mat-icon>
+    <h1>You're Invited!</h1>
+    <p class="subtitle">Please RSVP for our special day</p>
+  </div>
+
+  @if (notFound()) {
+    <mat-card class="rsvp-card not-found">
+      <mat-card-content>
+        <mat-icon>search_off</mat-icon>
+        <h2>Invitation Not Found</h2>
+        <p>This RSVP link is not valid. Please check your invitation email or contact us directly.</p>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  @if (guest() && !notFound()) {
+    <mat-card class="rsvp-card">
+      <mat-card-content>
+
+        <!-- Step: Attendance -->
+        @if (currentStep() === 'attendance') {
+          <div class="step-content">
+            <h2>Hello, {{ guest()!.firstName }}!</h2>
+            <p class="step-desc">We'd love for you to celebrate our wedding with us. Will you be joining us?</p>
+
+            <div class="attendance-options">
+              <div class="attendance-option" [class.selected]="attending() === 'yes'" (click)="attending.set('yes')">
+                <mat-icon>celebration</mat-icon>
+                <span>Yes, I'll be there!</span>
+              </div>
+              <div class="attendance-option decline" [class.selected]="attending() === 'no'" (click)="attending.set('no')">
+                <mat-icon>sentiment_dissatisfied</mat-icon>
+                <span>Sorry, I can't make it</span>
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <button mat-raised-button color="primary" [disabled]="!attending()" (click)="nextStep()">
+                Continue <mat-icon>arrow_forward</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Step: Details -->
+        @if (currentStep() === 'details') {
+          <div class="step-content">
+            <h2>Meal Preferences</h2>
+            <p class="step-desc">Please let us know your meal choice.</p>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Your Meal Preference</mat-label>
+              <mat-select [ngModel]="mealPreference()" (ngModelChange)="mealPreference.set($event)">
+                <mat-option value="chicken">Chicken</mat-option>
+                <mat-option value="beef">Beef</mat-option>
+                <mat-option value="fish">Fish</mat-option>
+                <mat-option value="vegetarian">Vegetarian</mat-option>
+                <mat-option value="vegan">Vegan</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Dietary Requirements or Allergies</mat-label>
+              <input matInput [ngModel]="dietaryRequirements()" (ngModelChange)="dietaryRequirements.set($event)" placeholder="Gluten free, nut allergy..." />
+            </mat-form-field>
+
+            @if (guest()!.plusOneAllowed) {
+              <div class="plus-one-section">
+                <h3><mat-icon>group_add</mat-icon> Plus-One</h3>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Plus-One Name (if bringing one)</mat-label>
+                  <input matInput [ngModel]="plusOneName()" (ngModelChange)="plusOneName.set($event)" />
+                </mat-form-field>
+                @if (plusOneName()) {
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Plus-One Meal Preference</mat-label>
+                    <mat-select [ngModel]="plusOneMeal()" (ngModelChange)="plusOneMeal.set($event)">
+                      <mat-option value="chicken">Chicken</mat-option>
+                      <mat-option value="beef">Beef</mat-option>
+                      <mat-option value="fish">Fish</mat-option>
+                      <mat-option value="vegetarian">Vegetarian</mat-option>
+                      <mat-option value="vegan">Vegan</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                }
+              </div>
+            }
+
+            <div class="step-actions">
+              <button mat-button (click)="prevStep()"><mat-icon>arrow_back</mat-icon> Back</button>
+              <button mat-raised-button color="primary" (click)="nextStep()">
+                Continue <mat-icon>arrow_forward</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Step: Extras -->
+        @if (currentStep() === 'extras') {
+          <div class="step-content">
+            <h2>A Few More Things...</h2>
+            <p class="step-desc">Optional details to help us plan your experience.</p>
+
+            <div class="checkboxes-section">
+              <mat-checkbox [ngModel]="accommodationRequired()" (ngModelChange)="accommodationRequired.set($event)">
+                I'd like to enquire about accommodation near the venue
+              </mat-checkbox>
+              <mat-checkbox [ngModel]="transportRequired()" (ngModelChange)="transportRequired.set($event)">
+                I'd like to enquire about transport to/from the venue
+              </mat-checkbox>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Song Request</mat-label>
+              <input matInput [ngModel]="songRequest()" (ngModelChange)="songRequest.set($event)" placeholder="Song you'd love to hear on the night..." />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Leave us a message</mat-label>
+              <textarea matInput [ngModel]="message()" (ngModelChange)="message.set($event)" rows="3" placeholder="Congratulations, wishes, anecdotes..."></textarea>
+            </mat-form-field>
+
+            <div class="step-actions">
+              <button mat-button (click)="prevStep()"><mat-icon>arrow_back</mat-icon> Back</button>
+              <button mat-raised-button color="primary" (click)="nextStep()">
+                Submit RSVP <mat-icon>send</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Submitted -->
+        @if (currentStep() === 'submitted') {
+          <div class="step-content submitted">
+            @if (attending() === 'yes') {
+              <mat-icon class="success-icon">celebration</mat-icon>
+              <h2>We'll see you there!</h2>
+              <p>Thank you, {{ guest()!.firstName }}! Your RSVP has been received. We can't wait to celebrate with you!</p>
+            } @else {
+              <mat-icon class="sorry-icon">sentiment_dissatisfied</mat-icon>
+              <h2>We'll miss you!</h2>
+              <p>Thank you for letting us know, {{ guest()!.firstName }}. We hope to celebrate with you another time.</p>
+            }
+            <p class="submitted-note">Need to change your response? Please contact us directly.</p>
+          </div>
+        }
+
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

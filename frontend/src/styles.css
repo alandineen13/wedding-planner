@@ -1,0 +1,181 @@
+/* Base reset */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  background: #303030;
+  color: rgba(255,255,255,0.87);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: rgba(255,255,255,0.92);
+  margin: 0 0 8px;
+}
+
+:root {
+  --mdc-theme-primary: #8b4a62;
+  --mat-sys-primary: #8b4a62;
+  --sidebar-bg: #2c1a1a;
+  --brand-primary: #8b4a62;
+  --brand-light: #e8a4b8;
+  --brand-bg: #303030;
+  --text-primary: rgba(255,255,255,0.87);
+  --text-secondary: rgba(255,255,255,0.6);
+  --text-muted: rgba(255,255,255,0.45);
+  --border-color: rgba(255,255,255,0.12);
+}
+
+.mat-mdc-raised-button.mat-primary {
+  --mdc-protected-button-container-color: #8b4a62;
+  background: linear-gradient(135deg, #8b4a62, #d4748c) !important;
+  color: #fff !important;
+}
+
+.mat-mdc-progress-bar.mat-primary {
+  --mdc-linear-progress-active-indicator-color: #8b4a62;
+}
+
+.mat-mdc-checkbox.mat-primary {
+  --mdc-checkbox-selected-checkmark-color: #fff;
+  --mdc-checkbox-selected-focus-icon-color: #8b4a62;
+  --mdc-checkbox-selected-hover-icon-color: #8b4a62;
+  --mdc-checkbox-selected-icon-color: #8b4a62;
+  --mdc-checkbox-selected-pressed-icon-color: #8b4a62;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #8b4a62; }
+
+/* Snackbar */
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: #1a1a1a;
+  --mdc-snackbar-supporting-text-color: #fff;
+}
+
+/* Dialog */
+.mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: 16px;
+}
+
+/* Table */
+.mat-mdc-table .mat-mdc-header-row { background: rgba(255,255,255,0.04); }
+.mat-mdc-table .mat-mdc-row { transition: background 0.15s; }
+.mat-mdc-table .mat-mdc-row:hover { background: rgba(255,255,255,0.05); }
+.mat-mdc-table { width: 100%; }
+
+/* ── Shared page layout utilities ───────────────────────── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 26px;
+  font-family: 'Playfair Display', serif;
+  color: rgba(255,255,255,0.92);
+  margin: 0;
+}
+
+.page-title mat-icon {
+  color: #e8a4b8;
+  font-size: 26px;
+  width: 26px;
+  height: 26px;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin: 4px 0 0;
+}
+
+/* ── Shared form layout ──────────────────────────────────── */
+.form-card { margin-bottom: 24px; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.form-grid .full-field,
+.form-grid .name-field,
+.form-grid .title-field { grid-column: 1 / -1; }
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.checkbox-wrap {
+  display: flex;
+  align-items: center;
+  padding-top: 8px;
+}
+
+/* ── Shared table layout ─────────────────────────────────── */
+.table-card { overflow: hidden; }
+.table-wrapper { overflow-x: auto; }
+
+/* ── Shared misc ─────────────────────────────────────────── */
+.text-muted { color: rgba(255,255,255,0.35); }
+
+.actions-cell {
+  display: flex;
+  gap: 2px;
+  justify-content: flex-end;
+}
+
+.category-chip {
+  display: inline-block;
+  background: rgba(139,74,98,0.25);
+  color: #e8a4b8;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.search-field { min-width: 220px; }
+
+.filters-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+/* ── Shared contract / status badges ────────────────────── */
+.contract-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.contract-badge.signed      { background: rgba(76,175,80,0.2);   color: #81c784; }
+.contract-badge.pending     { background: rgba(255,152,0,0.2);   color: #ffb74d; }
+.contract-badge.negotiating { background: rgba(33,150,243,0.2);  color: #64b5f6; }
+.contract-badge.cancelled   { background: rgba(244,67,54,0.2);   color: #ef9a9a; }
+.contract-badge.none        { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); }

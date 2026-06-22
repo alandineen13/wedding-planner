@@ -1,0 +1,155 @@
+<div class="tasks-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><mat-icon>checklist</mat-icon> Tasks</h1>
+      <p class="page-subtitle">{{ stats().completed }}/{{ stats().total }} complete · {{ stats().overdue }} overdue</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="toggleForm()">
+      <mat-icon>add</mat-icon> Add Task
+    </button>
+  </div>
+
+  <!-- Progress -->
+  <mat-card class="progress-card">
+    <mat-card-content>
+      <div class="progress-header">
+        <span>Overall Progress</span>
+        <span class="progress-pct">{{ taskProgress() }}%</span>
+      </div>
+      <mat-progress-bar mode="determinate" [value]="taskProgress()" color="accent"></mat-progress-bar>
+      <div class="stats-row">
+        <span class="stat-chip completed"><mat-icon>check_circle</mat-icon> {{ stats().completed }} Done</span>
+        <span class="stat-chip in-progress"><mat-icon>pending</mat-icon> {{ stats().inProgress }} In Progress</span>
+        <span class="stat-chip todo"><mat-icon>radio_button_unchecked</mat-icon> {{ stats().todo }} To Do</span>
+        @if (stats().overdue > 0) {
+          <span class="stat-chip overdue"><mat-icon>warning</mat-icon> {{ stats().overdue }} Overdue</span>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Add/Edit Form -->
+  @if (showForm()) {
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>{{ editingId() ? 'Edit Task' : 'Add Task' }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-grid">
+          <mat-form-field appearance="outline" class="title-field">
+            <mat-label>Task Title *</mat-label>
+            <input matInput [(ngModel)]="formData.title" name="title" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Category</mat-label>
+            <mat-select [(ngModel)]="formData.category" name="category">
+              @for (cat of categories; track cat) {
+                <mat-option [value]="cat">{{ cat | titlecase }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Priority</mat-label>
+            <mat-select [(ngModel)]="formData.priority" name="priority">
+              <mat-option value="urgent">Urgent</mat-option>
+              <mat-option value="high">High</mat-option>
+              <mat-option value="medium">Medium</mat-option>
+              <mat-option value="low">Low</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="formData.status" name="status">
+              <mat-option value="todo">To Do</mat-option>
+              <mat-option value="in_progress">In Progress</mat-option>
+              <mat-option value="completed">Completed</mat-option>
+              <mat-option value="cancelled">Cancelled</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Due Date</mat-label>
+            <input matInput type="date" [(ngModel)]="formData.dueDate" name="dueDate" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="title-field">
+            <mat-label>Description</mat-label>
+            <textarea matInput [(ngModel)]="formData.description" name="description" rows="2"></textarea>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button (click)="resetForm()">Cancel</button>
+        <button mat-raised-button color="primary" (click)="saveTask()" [disabled]="!formData.title">
+          {{ editingId() ? 'Update' : 'Add Task' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  }
+
+  <!-- Filters -->
+  <div class="filters-row">
+    <mat-form-field appearance="outline">
+      <mat-label>Search</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+        <mat-option value="">All</mat-option>
+        <mat-option value="todo">To Do</mat-option>
+        <mat-option value="in_progress">In Progress</mat-option>
+        <mat-option value="completed">Completed</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Priority</mat-label>
+      <mat-select [ngModel]="priorityFilter()" (ngModelChange)="priorityFilter.set($event)">
+        <mat-option value="">All</mat-option>
+        <mat-option value="urgent">Urgent</mat-option>
+        <mat-option value="high">High</mat-option>
+        <mat-option value="medium">Medium</mat-option>
+        <mat-option value="low">Low</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Task List -->
+  <div class="tasks-list">
+    @for (task of filteredTasks(); track task.id) {
+      <mat-card class="task-card" [class.completed]="task.status === 'completed'" [class.overdue]="isOverdue(task)">
+        <mat-card-content>
+          <div class="task-row">
+            <button mat-icon-button (click)="toggleStatus(task)" [class]="'status-btn status-' + task.status">
+              <mat-icon>{{ getStatusIcon(task.status) }}</mat-icon>
+            </button>
+            <div class="task-info">
+              <span class="task-title" [class.done]="task.status === 'completed'">{{ task.title }}</span>
+              <div class="task-meta">
+                <span [class]="'priority-chip ' + getPriorityClass(task.priority)">{{ task.priority | titlecase }}</span>
+                <span class="category-chip">{{ task.category | titlecase }}</span>
+                @if (task.dueDate) {
+                  <span class="due-date" [class.overdue]="isOverdue(task)">
+                    <mat-icon>event</mat-icon>
+                    {{ task.dueDate | date:'d MMM yyyy' }}
+                    @if (isOverdue(task)) { <span class="overdue-tag">OVERDUE</span> }
+                  </span>
+                }
+              </div>
+              @if (task.description) { <p class="task-desc">{{ task.description }}</p> }
+            </div>
+            <div class="task-actions">
+              <button mat-icon-button (click)="editTask(task)" matTooltip="Edit"><mat-icon>edit</mat-icon></button>
+              <button mat-icon-button color="warn" (click)="deleteTask(task.id)" matTooltip="Delete"><mat-icon>delete</mat-icon></button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+    @if (filteredTasks().length === 0) {
+      <div class="empty-tasks">
+        <mat-icon>task_alt</mat-icon>
+        <p>No tasks found</p>
+      </div>
+    }
+  </div>
+</div>

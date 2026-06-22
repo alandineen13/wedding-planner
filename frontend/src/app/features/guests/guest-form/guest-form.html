@@ -1,0 +1,122 @@
+<h2 mat-dialog-title>
+  <mat-icon>{{ isEdit() ? 'edit' : 'person_add' }}</mat-icon>
+  {{ isEdit() ? 'Edit Guest' : 'Add Guest' }}
+</h2>
+
+<mat-dialog-content>
+  <div class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>First Name *</mat-label>
+      <input matInput [(ngModel)]="form.firstName" name="firstName" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Last Name *</mat-label>
+      <input matInput [(ngModel)]="form.lastName" name="lastName" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" [(ngModel)]="form.email" name="email" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Phone</mat-label>
+      <input matInput [(ngModel)]="form.phone" name="phone" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Side</mat-label>
+      <mat-select [(ngModel)]="form.side" name="side">
+        <mat-option value="bride">Bride's side</mat-option>
+        <mat-option value="groom">Groom's side</mat-option>
+        <mat-option value="both">Both</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Group</mat-label>
+      <input matInput [(ngModel)]="form.group" name="group" placeholder="Family, Friends, Work..." />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Invite Status</mat-label>
+      <mat-select [(ngModel)]="form.inviteStatus" name="inviteStatus">
+        <mat-option value="not_sent">Not Sent</mat-option>
+        <mat-option value="sent">Sent</mat-option>
+        <mat-option value="delivered">Delivered</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>RSVP Status</mat-label>
+      <mat-select [(ngModel)]="form.rsvpStatus" name="rsvpStatus">
+        <mat-option value="pending">Pending</mat-option>
+        <mat-option value="confirmed">Confirmed</mat-option>
+        <mat-option value="declined">Declined</mat-option>
+        <mat-option value="maybe">Maybe</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Meal Preference</mat-label>
+      <mat-select [(ngModel)]="form.mealPreference" name="mealPreference">
+        <mat-option value="">Not specified</mat-option>
+        <mat-option value="chicken">Chicken</mat-option>
+        <mat-option value="beef">Beef</mat-option>
+        <mat-option value="fish">Fish</mat-option>
+        <mat-option value="vegetarian">Vegetarian</mat-option>
+        <mat-option value="vegan">Vegan</mat-option>
+        <mat-option value="kids">Kids Meal</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Dietary Requirements</mat-label>
+      <input matInput [(ngModel)]="form.dietaryRequirements" name="dietary" placeholder="Allergies, intolerances..." />
+    </mat-form-field>
+  </div>
+
+  <mat-divider class="section-divider"></mat-divider>
+
+  <div class="checkboxes-row">
+    <mat-checkbox [(ngModel)]="form.plusOneAllowed" name="plusOneAllowed">Plus-one allowed</mat-checkbox>
+    <mat-checkbox [(ngModel)]="form.accommodationRequired" name="accommodation">Needs accommodation</mat-checkbox>
+    <mat-checkbox [(ngModel)]="form.transportRequired" name="transport">Needs transport</mat-checkbox>
+  </div>
+
+  @if (form.plusOneAllowed) {
+    <div class="plus-one-section">
+      <h4>Plus-One Details</h4>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Plus-One Name</mat-label>
+          <input matInput [(ngModel)]="form.plusOneName" name="plusOneName" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Plus-One Meal</mat-label>
+          <mat-select [(ngModel)]="form.plusOneMeal" name="plusOneMeal">
+            <mat-option value="">Not specified</mat-option>
+            <mat-option value="chicken">Chicken</mat-option>
+            <mat-option value="beef">Beef</mat-option>
+            <mat-option value="fish">Fish</mat-option>
+            <mat-option value="vegetarian">Vegetarian</mat-option>
+            <mat-option value="vegan">Vegan</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  }
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Notes</mat-label>
+    <textarea matInput [(ngModel)]="form.notes" name="notes" rows="2"></textarea>
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="save()" [disabled]="!form.firstName || !form.lastName">
+    {{ isEdit() ? 'Save Changes' : 'Add Guest' }}
+  </button>
+</mat-dialog-actions>

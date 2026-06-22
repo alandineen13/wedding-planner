@@ -1,0 +1,187 @@
+<div class="dashboard">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        <mat-icon>favorite</mat-icon>
+        {{ user()?.name }}
+      </h1>
+      @if (user()?.weddingDate) {
+        <p class="page-subtitle">
+          {{ user()!.venueName }} · {{ user()!.weddingDate | date:'EEEE, d MMMM yyyy' }}
+        </p>
+      }
+    </div>
+    @if (daysUntilWedding() !== null) {
+      <div class="countdown-badge">
+        <span class="countdown-number">{{ daysUntilWedding() }}</span>
+        <span class="countdown-label">days to go</span>
+      </div>
+    }
+  </div>
+
+  <!-- Key Metrics Row -->
+  <div class="metrics-grid">
+    <mat-card class="metric-card guests-card" routerLink="/guests">
+      <mat-card-content>
+        <div class="metric-icon-wrap">
+          <mat-icon>people</mat-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-value">{{ guestStats().total }}</span>
+          <span class="metric-label">Total Guests</span>
+        </div>
+        <div class="metric-sub">
+          <span class="chip confirmed">{{ guestStats().confirmed }} confirmed</span>
+          <span class="chip pending">{{ guestStats().pending }} pending</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="metric-card rsvp-card" routerLink="/guests">
+      <mat-card-content>
+        <div class="metric-icon-wrap">
+          <mat-icon>mark_email_read</mat-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-value">{{ guestStats().confirmed }}</span>
+          <span class="metric-label">Confirmed Attending</span>
+        </div>
+        <div class="metric-sub">
+          <span class="chip">incl. {{ guestStats().plusOnes }} plus-ones</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="metric-card budget-card" routerLink="/budget">
+      <mat-card-content>
+        <div class="metric-icon-wrap">
+          <mat-icon>account_balance_wallet</mat-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-value">{{ budgetSummary().totalActual | currency:'EUR':'symbol':'1.0-0' }}</span>
+          <span class="metric-label">Budget Spent</span>
+        </div>
+        <div class="metric-sub">
+          <mat-progress-bar mode="determinate" [value]="budgetUsedPct()" [color]="budgetUsedPct() > 90 ? 'warn' : 'primary'"></mat-progress-bar>
+          <span class="chip">{{ budgetUsedPct() }}% of {{ budgetSummary().totalBudget | currency:'EUR':'symbol':'1.0-0' }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="metric-card tasks-card" routerLink="/tasks">
+      <mat-card-content>
+        <div class="metric-icon-wrap">
+          <mat-icon>checklist</mat-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-value">{{ taskStats().completed }}/{{ taskStats().total }}</span>
+          <span class="metric-label">Tasks Complete</span>
+        </div>
+        <div class="metric-sub">
+          <mat-progress-bar mode="determinate" [value]="taskProgress()" color="accent"></mat-progress-bar>
+          @if (taskStats().overdue > 0) {
+            <span class="chip overdue">{{ taskStats().overdue }} overdue</span>
+          } @else {
+            <span class="chip">{{ taskProgress() }}% done</span>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="metric-card seating-card" routerLink="/seating">
+      <mat-card-content>
+        <div class="metric-icon-wrap">
+          <mat-icon>chair</mat-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-value">{{ seatingStats().seatedGuests }}/{{ seatingStats().totalSeats }}</span>
+          <span class="metric-label">Seats Assigned</span>
+        </div>
+        <div class="metric-sub">
+          <span class="chip">{{ seatingStats().totalTables }} tables</span>
+          <span class="chip">{{ seatingStats().unseatedSeats }} free seats</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="metric-card balance-card" routerLink="/budget">
+      <mat-card-content>
+        <div class="metric-icon-wrap">
+          <mat-icon>payments</mat-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-value">{{ budgetSummary().totalOutstanding | currency:'EUR':'symbol':'1.0-0' }}</span>
+          <span class="metric-label">Outstanding Balance</span>
+        </div>
+        <div class="metric-sub">
+          <span class="chip">{{ budgetSummary().variance | currency:'EUR':'symbol':'1.0-0' }} variance</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="charts-grid">
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>RSVP Status</mat-card-title>
+        <mat-card-subtitle>{{ guestStats().total }} guests invited</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-wrapper">
+          <canvas #rsvpChart></canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>Budget by Category</mat-card-title>
+        <mat-card-subtitle>Actual spend per category</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-wrapper">
+          <canvas #budgetChart></canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Upcoming Tasks -->
+  <mat-card class="tasks-card-section">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>schedule</mat-icon> Upcoming Tasks
+      </mat-card-title>
+      <span class="spacer"></span>
+      <a mat-button routerLink="/tasks" color="primary">View all</a>
+    </mat-card-header>
+    <mat-card-content>
+      @if (upcomingTasks().length === 0) {
+        <p class="empty-state">All tasks complete! 🎉</p>
+      } @else {
+        <mat-list>
+          @for (task of upcomingTasks(); track task.id) {
+            <mat-list-item class="task-item" [class.overdue]="isOverdue(task.dueDate)">
+              <mat-icon matListItemIcon [class]="'priority-' + task.priority">
+                {{ task.status === 'in_progress' ? 'pending' : 'radio_button_unchecked' }}
+              </mat-icon>
+              <span matListItemTitle>{{ task.title }}</span>
+              <span matListItemLine>
+                {{ task.category | titlecase }}
+                @if (task.dueDate) {
+                  · Due {{ task.dueDate | date:'d MMM' }}
+                  @if (isOverdue(task.dueDate)) {
+                    <span class="overdue-badge">OVERDUE</span>
+                  }
+                }
+              </span>
+            </mat-list-item>
+            <mat-divider></mat-divider>
+          }
+        </mat-list>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

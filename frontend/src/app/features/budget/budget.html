@@ -1,0 +1,162 @@
+<div class="budget-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><mat-icon>account_balance_wallet</mat-icon> Budget</h1>
+      <p class="page-subtitle">Track your wedding spend across all categories</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="toggleForm()">
+      <mat-icon>add</mat-icon> Add Item
+    </button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <mat-card class="summary-card total">
+      <mat-card-content>
+        <mat-icon>account_balance_wallet</mat-icon>
+        <span class="summary-value">{{ totalBudget() | currency:'EUR':'symbol':'1.0-0' }}</span>
+        <span class="summary-label">Total Budget</span>
+      </mat-card-content>
+    </mat-card>
+    <mat-card class="summary-card estimated">
+      <mat-card-content>
+        <mat-icon>calculate</mat-icon>
+        <span class="summary-value">{{ summary().totalEstimated | currency:'EUR':'symbol':'1.0-0' }}</span>
+        <span class="summary-label">Total Estimated</span>
+      </mat-card-content>
+    </mat-card>
+    <mat-card class="summary-card actual">
+      <mat-card-content>
+        <mat-icon>receipt_long</mat-icon>
+        <span class="summary-value">{{ summary().totalActual | currency:'EUR':'symbol':'1.0-0' }}</span>
+        <span class="summary-label">Actual Spend</span>
+        <mat-progress-bar mode="determinate" [value]="budgetUsedPct()" [color]="budgetUsedPct() > 90 ? 'warn' : 'primary'"></mat-progress-bar>
+        <span class="progress-label">{{ budgetUsedPct() }}% of budget</span>
+      </mat-card-content>
+    </mat-card>
+    <mat-card class="summary-card outstanding">
+      <mat-card-content>
+        <mat-icon>pending_actions</mat-icon>
+        <span class="summary-value">{{ summary().totalOutstanding | currency:'EUR':'symbol':'1.0-0' }}</span>
+        <span class="summary-label">Outstanding</span>
+      </mat-card-content>
+    </mat-card>
+    <mat-card [class]="'summary-card variance ' + getVarianceClass()">
+      <mat-card-content>
+        <mat-icon>{{ summary().variance >= 0 ? 'trending_down' : 'trending_up' }}</mat-icon>
+        <span class="summary-value">{{ summary().variance | currency:'EUR':'symbol':'1.0-0' }}</span>
+        <span class="summary-label">{{ summary().variance >= 0 ? 'Under Budget' : 'Over Budget' }}</span>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Add/Edit Form -->
+  @if (showAddForm()) {
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>{{ editingId() ? 'Edit Item' : 'Add Budget Item' }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-grid">
+          <mat-form-field appearance="outline" class="name-field">
+            <mat-label>Item Name *</mat-label>
+            <input matInput [(ngModel)]="formData.name" name="name" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Category *</mat-label>
+            <mat-select [(ngModel)]="formData.category" name="category">
+              @for (cat of categories; track cat) {
+                <mat-option [value]="cat">{{ cat | titlecase }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Estimated Cost (€) *</mat-label>
+            <input matInput type="number" [(ngModel)]="formData.estimatedCost" name="estimated" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Actual Cost (€)</mat-label>
+            <input matInput type="number" [(ngModel)]="formData.actualCost" name="actual" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Payment Status</mat-label>
+            <mat-select [(ngModel)]="formData.paymentStatus" name="status">
+              <mat-option value="unpaid">Unpaid</mat-option>
+              <mat-option value="deposit_paid">Deposit Paid</mat-option>
+              <mat-option value="partially_paid">Partially Paid</mat-option>
+              <mat-option value="paid">Paid in Full</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Notes</mat-label>
+            <input matInput [(ngModel)]="formData.notes" name="notes" />
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button (click)="resetForm()">Cancel</button>
+        <button mat-raised-button color="primary" (click)="saveItem()" [disabled]="!formData.name || !formData.estimatedCost">
+          {{ editingId() ? 'Update' : 'Add Item' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  }
+
+  <!-- Budget Table -->
+  <mat-card class="table-card">
+    <mat-card-content>
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="items()" class="budget-table">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Item</th>
+            <td mat-cell *matCellDef="let item">
+              <span class="item-name">{{ item.name }}</span>
+              @if (item.notes) { <span class="item-notes">{{ item.notes }}</span> }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef>Category</th>
+            <td mat-cell *matCellDef="let item">
+              <span class="category-chip">{{ item.category | titlecase }}</span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="estimated">
+            <th mat-header-cell *matHeaderCellDef>Estimated</th>
+            <td mat-cell *matCellDef="let item">{{ item.estimatedCost | currency:'EUR':'symbol':'1.0-0' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="actual">
+            <th mat-header-cell *matHeaderCellDef>Actual</th>
+            <td mat-cell *matCellDef="let item">
+              @if (item.actualCost) {
+                <span [class.over-estimate]="item.actualCost > item.estimatedCost">
+                  {{ item.actualCost | currency:'EUR':'symbol':'1.0-0' }}
+                </span>
+              } @else {
+                <span class="text-muted">—</span>
+              }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="paymentStatus">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let item">
+              <span [class]="'payment-badge ' + getPaymentStatusColor(item.paymentStatus)">
+                {{ getPaymentStatusLabel(item.paymentStatus) }}
+              </span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let item">
+              <div class="actions-cell">
+                <button mat-icon-button (click)="editItem(item)" matTooltip="Edit"><mat-icon>edit</mat-icon></button>
+                <button mat-icon-button color="warn" (click)="deleteItem(item.id)" matTooltip="Delete"><mat-icon>delete</mat-icon></button>
+              </div>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="budget-row"></tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

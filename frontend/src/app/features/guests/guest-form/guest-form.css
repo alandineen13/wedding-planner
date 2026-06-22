@@ -1,0 +1,53 @@
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Playfair Display', serif;
+}
+
+h2[mat-dialog-title] mat-icon { color: #e8a4b8; }
+
+[mat-dialog-content] {
+  padding-top: 16px !important;
+  min-width: 480px;
+}
+
+@media (max-width: 600px) {
+  [mat-dialog-content] { min-width: unset; }
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.form-row mat-form-field { flex: 1; }
+
+.full-width { width: 100%; }
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #e8a4b8;
+  margin: 16px 0 8px;
+}
+
+.plus-one-section {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 8px;
+}
+
+[mat-dialog-actions] {
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px !important;
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #8b4a62, #d4748c) !important;
+  color: #fff !important;
+}
