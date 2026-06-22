@@ -1,59 +1,66 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, tap } from 'rxjs';
 import { BudgetItem, BudgetSummary } from '../../shared/models/budget.model';
+import { environment } from '../../../environments/environment';
 
-const TOTAL_BUDGET = 25000;
-
-const MOCK_ITEMS: BudgetItem[] = [
-  { id: '1', name: 'The Grand Hall', category: 'venue', estimatedCost: 8000, actualCost: 8500, depositAmount: 2000, depositPaid: true, paymentStatus: 'deposit_paid', createdAt: '2025-01-01' },
-  { id: '2', name: 'Gourmet Catering Co.', category: 'catering', estimatedCost: 6000, actualCost: 6200, paymentStatus: 'unpaid', createdAt: '2025-01-01' },
-  { id: '3', name: 'Photo & Video Package', category: 'photography', estimatedCost: 3500, actualCost: 3500, depositAmount: 500, depositPaid: true, paymentStatus: 'deposit_paid', createdAt: '2025-01-02' },
-  { id: '4', name: 'Floral Arrangements', category: 'flowers', estimatedCost: 1200, paymentStatus: 'unpaid', createdAt: '2025-01-02' },
-  { id: '5', name: 'Wedding Dress', category: 'attire', estimatedCost: 1500, actualCost: 1800, paymentStatus: 'paid', createdAt: '2025-01-03' },
-  { id: '6', name: 'DJ & Entertainment', category: 'entertainment', estimatedCost: 1000, actualCost: 1000, depositAmount: 300, depositPaid: true, paymentStatus: 'deposit_paid', createdAt: '2025-01-03' },
-  { id: '7', name: 'Wedding Cake', category: 'cake', estimatedCost: 600, paymentStatus: 'unpaid', createdAt: '2025-01-04' },
-  { id: '8', name: 'Transport & Limo', category: 'transport', estimatedCost: 800, actualCost: 800, paymentStatus: 'paid', createdAt: '2025-01-04' },
-];
+const API = `${environment.apiUrl}/budget`;
 
 @Injectable({ providedIn: 'root' })
 export class BudgetService {
-  private _items = signal<BudgetItem[]>(MOCK_ITEMS);
-  readonly totalBudget = signal<number>(TOTAL_BUDGET);
+  private http = inject(HttpClient);
+  private _items = signal<BudgetItem[]>([]);
+  readonly totalBudget = signal<number>(0);
 
   readonly items = this._items.asReadonly();
 
   readonly summary = computed((): BudgetSummary => {
     const items = this._items();
-    const totalEstimated = items.reduce((sum, i) => sum + i.estimatedCost, 0);
-    const totalActual = items.reduce((sum, i) => sum + (i.actualCost ?? 0), 0);
-    const totalPaid = items
+    const totalEstimated = items.reduce((s, i) => s + i.estimatedCost, 0);
+    const totalActual    = items.reduce((s, i) => s + (i.actualCost ?? 0), 0);
+    const totalPaid      = items
       .filter(i => i.paymentStatus === 'paid')
-      .reduce((sum, i) => sum + (i.actualCost ?? i.estimatedCost), 0);
-    const totalOutstanding = totalActual - totalPaid;
+      .reduce((s, i) => s + (i.actualCost ?? i.estimatedCost), 0);
     return {
       totalBudget: this.totalBudget(),
       totalEstimated,
       totalActual,
       totalPaid,
-      totalOutstanding,
+      totalOutstanding: totalActual - totalPaid,
       variance: this.totalBudget() - totalActual,
     };
   });
 
-  add(item: Omit<BudgetItem, 'id' | 'createdAt'>): BudgetItem {
-    const newItem: BudgetItem = {
-      ...item,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    this._items.update(list => [...list, newItem]);
-    return newItem;
+  constructor() { this.load(); }
+
+  private load(): void {
+    this.http.get<{ totalBudget: number; items: BudgetItem[] }>(API).subscribe(res => {
+      this._items.set(res.items);
+      this.totalBudget.set(res.totalBudget);
+    });
   }
 
-  update(id: string, changes: Partial<BudgetItem>): void {
-    this._items.update(list => list.map(i => i.id === id ? { ...i, ...changes } : i));
+  setTotalBudget(amount: number): Observable<{ totalBudget: number }> {
+    return this.http.put<{ totalBudget: number }>(`${API}/settings`, { totalBudget: amount }).pipe(
+      tap(res => this.totalBudget.set(res.totalBudget))
+    );
   }
 
-  delete(id: string): void {
-    this._items.update(list => list.filter(i => i.id !== id));
+  add(item: Omit<BudgetItem, 'id' | 'createdAt'>): Observable<BudgetItem> {
+    return this.http.post<BudgetItem>(API, item).pipe(
+      tap(created => this._items.update(list => [...list, created]))
+    );
+  }
+
+  update(id: string, changes: Partial<BudgetItem>): Observable<BudgetItem> {
+    return this.http.put<BudgetItem>(`${API}/${id}`, changes).pipe(
+      tap(item => this._items.update(list => list.map(i => i.id === id ? item : i)))
+    );
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${API}/${id}`).pipe(
+      tap(() => this._items.update(list => list.filter(i => i.id !== id)))
+    );
   }
 }

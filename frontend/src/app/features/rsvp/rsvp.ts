@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -13,7 +13,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { GuestService } from '../../core/services/guest.service';
 import { Guest } from '../../shared/models/guest.model';
 
-type Step = 'attendance' | 'details' | 'extras' | 'submitted';
+type Step = 'loading' | 'attendance' | 'details' | 'extras' | 'submitted';
 
 @Component({
   selector: 'app-rsvp',
@@ -29,7 +29,7 @@ export class RsvpComponent implements OnInit {
   token = signal('');
   guest = signal<Guest | null>(null);
   notFound = signal(false);
-  currentStep = signal<Step>('attendance');
+  currentStep = signal<Step>('loading');
 
   attending = signal<'yes' | 'no' | ''>('');
   mealPreference = signal<Guest['mealPreference']>(undefined);
@@ -44,24 +44,28 @@ export class RsvpComponent implements OnInit {
   ngOnInit(): void {
     const t = this.route.snapshot.paramMap.get('token') ?? '';
     this.token.set(t);
-    const found = this.guestSvc.getByRsvpToken(t);
-    if (found) {
-      this.guest.set(found);
-      const status = found.rsvpStatus;
-      if (status !== 'pending') {
-        this.attending.set(status === 'confirmed' ? 'yes' : 'no');
-        this.mealPreference.set(found.mealPreference);
-        this.dietaryRequirements.set(found.dietaryRequirements ?? '');
-        this.plusOneName.set(found.plusOne?.name ?? '');
-        this.accommodationRequired.set(found.accommodationRequired ?? false);
-        this.transportRequired.set(found.transportRequired ?? false);
-        this.songRequest.set(found.songRequest ?? '');
-        this.message.set(found.message ?? '');
-        this.currentStep.set('submitted');
-      }
-    } else {
-      this.notFound.set(true);
-    }
+    this.guestSvc.getByRsvpToken(t).subscribe({
+      next: (found) => {
+        this.guest.set(found);
+        if (found.rsvpStatus !== 'pending') {
+          this.attending.set(found.rsvpStatus === 'confirmed' ? 'yes' : 'no');
+          this.mealPreference.set(found.mealPreference);
+          this.dietaryRequirements.set(found.dietaryRequirements ?? '');
+          this.plusOneName.set(found.plusOne?.name ?? '');
+          this.accommodationRequired.set(found.accommodationRequired ?? false);
+          this.transportRequired.set(found.transportRequired ?? false);
+          this.songRequest.set(found.songRequest ?? '');
+          this.message.set(found.message ?? '');
+          this.currentStep.set('submitted');
+        } else {
+          this.currentStep.set('attendance');
+        }
+      },
+      error: () => {
+        this.notFound.set(true);
+        this.currentStep.set('attendance');
+      },
+    });
   }
 
   nextStep(): void {
@@ -100,7 +104,8 @@ export class RsvpComponent implements OnInit {
       message: this.message() || undefined,
     };
 
-    this.guestSvc.submitRsvp(g.rsvpToken, data);
-    this.currentStep.set('submitted');
+    this.guestSvc.submitRsvp(g.rsvpToken, data).subscribe({
+      next: () => this.currentStep.set('submitted'),
+    });
   }
 }

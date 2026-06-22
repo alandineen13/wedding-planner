@@ -1,4 +1,4 @@
-import { Component, inject, computed, ElementRef, AfterViewInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, inject, computed, ElementRef, AfterViewInit, OnDestroy, ViewChild, DestroyRef, Injector } from '@angular/core';
 import { DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -14,6 +14,7 @@ import { TaskService } from '../../core/services/task.service';
 import { SeatingService } from '../../core/services/seating.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { Chart, registerables } from 'chart.js';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 Chart.register(...registerables);
 
@@ -25,22 +26,25 @@ Chart.register(...registerables);
   styleUrl: './dashboard.css',
 })
 export class DashboardComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('rsvpChart') rsvpChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('rsvpChart')   rsvpChartRef!:   ElementRef<HTMLCanvasElement>;
   @ViewChild('budgetChart') budgetChartRef!: ElementRef<HTMLCanvasElement>;
 
-  private guestSvc = inject(GuestService);
-  private budgetSvc = inject(BudgetService);
-  private taskSvc = inject(TaskService);
+  private guestSvc   = inject(GuestService);
+  private budgetSvc  = inject(BudgetService);
+  private taskSvc    = inject(TaskService);
   private seatingSvc = inject(SeatingService);
-  private authSvc = inject(AuthService);
+  private authSvc    = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
+  private injector   = inject(Injector);
 
-  private charts: Chart[] = [];
+  private rsvpChart:   Chart | null = null;
+  private budgetChart: Chart | null = null;
 
-  readonly user = this.authSvc.user;
-  readonly guestStats = this.guestSvc.stats;
+  readonly user          = this.authSvc.user;
+  readonly guestStats    = this.guestSvc.stats;
   readonly budgetSummary = this.budgetSvc.summary;
-  readonly taskStats = this.taskSvc.stats;
-  readonly seatingStats = this.seatingSvc.stats;
+  readonly taskStats     = this.taskSvc.stats;
+  readonly seatingStats  = this.seatingSvc.stats;
 
   readonly upcomingTasks = computed(() =>
     this.taskSvc.tasks()
@@ -61,9 +65,8 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
   });
 
   readonly taskProgress = computed(() => {
-    const stats = this.taskStats();
-    if (!stats.total) return 0;
-    return Math.round((stats.completed / stats.total) * 100);
+    const s = this.taskStats();
+    return s.total ? Math.round((s.completed / s.total) * 100) : 0;
   });
 
   readonly budgetUsedPct = computed(() => {
@@ -73,26 +76,48 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
   });
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.initRsvpChart();
-      this.initBudgetChart();
-    }, 100);
+    // Create chart skeletons immediately (empty data)
+    this.rsvpChart   = this.buildRsvpChart([0, 0, 0, 0]);
+    this.budgetChart = this.buildBudgetChart([], []);
+
+    // Push real data into the charts as soon as each signal updates
+    toObservable(this.guestSvc.stats, { injector: this.injector })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(stats => {
+        if (!this.rsvpChart) return;
+        this.rsvpChart.data.datasets[0].data = [
+          stats.confirmed, stats.declined, stats.pending, stats.maybe,
+        ];
+        this.rsvpChart.update();
+      });
+
+    toObservable(this.budgetSvc.items, { injector: this.injector })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(items => {
+        if (!this.budgetChart) return;
+        const totals = items.reduce((acc, item) => {
+          acc[item.category] = (acc[item.category] ?? 0) + (item.actualCost ?? item.estimatedCost);
+          return acc;
+        }, {} as Record<string, number>);
+        this.budgetChart.data.labels   = Object.keys(totals).map(k => this.formatCategory(k));
+        this.budgetChart.data.datasets[0].data = Object.values(totals);
+        this.budgetChart.update();
+      });
   }
 
   ngOnDestroy(): void {
-    this.charts.forEach(c => c.destroy());
+    this.rsvpChart?.destroy();
+    this.budgetChart?.destroy();
   }
 
-  private initRsvpChart(): void {
-    const stats = this.guestStats();
-    const ctx = this.rsvpChartRef?.nativeElement?.getContext('2d');
-    if (!ctx) return;
-    const chart = new Chart(ctx, {
+  private buildRsvpChart(data: number[]): Chart {
+    const ctx = this.rsvpChartRef.nativeElement.getContext('2d')!;
+    return new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: ['Confirmed', 'Declined', 'Pending', 'Maybe'],
         datasets: [{
-          data: [stats.confirmed, stats.declined, stats.pending, stats.maybe],
+          data,
           backgroundColor: ['#4caf50', '#f44336', '#ff9800', '#2196f3'],
           borderWidth: 2,
           borderColor: '#424242',
@@ -110,25 +135,17 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
         cutout: '65%',
       },
     });
-    this.charts.push(chart);
   }
 
-  private initBudgetChart(): void {
-    const items = this.budgetSvc.items();
-    const categoryTotals = items.reduce((acc, item) => {
-      acc[item.category] = (acc[item.category] ?? 0) + (item.actualCost ?? item.estimatedCost);
-      return acc;
-    }, {} as Record<string, number>);
-
-    const ctx = this.budgetChartRef?.nativeElement?.getContext('2d');
-    if (!ctx) return;
-    const chart = new Chart(ctx, {
+  private buildBudgetChart(labels: string[], data: number[]): Chart {
+    const ctx = this.budgetChartRef.nativeElement.getContext('2d')!;
+    return new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: Object.keys(categoryTotals).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
+        labels,
         datasets: [{
           label: 'Cost (€)',
-          data: Object.values(categoryTotals),
+          data,
           backgroundColor: 'rgba(139, 74, 98, 0.7)',
           borderColor: '#8b4a62',
           borderWidth: 1,
@@ -142,7 +159,10 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
         scales: {
           y: {
             beginAtZero: true,
-            ticks: { color: 'rgba(255,255,255,0.6)', callback: (v: any) => '€' + v },
+            ticks: {
+              color: 'rgba(255,255,255,0.6)',
+              callback: (v: any) => '€' + Number(v).toLocaleString(),
+            },
             grid: { color: 'rgba(255,255,255,0.08)' },
           },
           x: {
@@ -152,7 +172,10 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
         },
       },
     });
-    this.charts.push(chart);
+  }
+
+  private formatCategory(key: string): string {
+    return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   }
 
   getPriorityColor(priority: string): string {

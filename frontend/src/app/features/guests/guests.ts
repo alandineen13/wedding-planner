@@ -69,8 +69,10 @@ export class GuestsComponent {
     const ref = this.dialog.open(GuestFormComponent, { width: '600px', data: null });
     ref.afterClosed().subscribe(result => {
       if (result) {
-        this.guestSvc.add(result);
-        this.snackBar.open('Guest added successfully', 'Close', { duration: 3000 });
+        this.guestSvc.add(result).subscribe({
+          next: () => this.snackBar.open('Guest added successfully', 'Close', { duration: 3000 }),
+          error: () => this.snackBar.open('Failed to add guest', 'Close', { duration: 3000 }),
+        });
       }
     });
   }
@@ -79,16 +81,20 @@ export class GuestsComponent {
     const ref = this.dialog.open(GuestFormComponent, { width: '600px', data: guest });
     ref.afterClosed().subscribe(result => {
       if (result) {
-        this.guestSvc.update(guest.id, result);
-        this.snackBar.open('Guest updated', 'Close', { duration: 3000 });
+        this.guestSvc.update(guest.id, result).subscribe({
+          next: () => this.snackBar.open('Guest updated', 'Close', { duration: 3000 }),
+          error: () => this.snackBar.open('Failed to update guest', 'Close', { duration: 3000 }),
+        });
       }
     });
   }
 
   deleteGuest(guest: Guest): void {
     if (confirm(`Remove ${guest.firstName} ${guest.lastName}?`)) {
-      this.guestSvc.delete(guest.id);
-      this.snackBar.open('Guest removed', 'Close', { duration: 3000 });
+      this.guestSvc.delete(guest.id).subscribe({
+        next: () => this.snackBar.open('Guest removed', 'Close', { duration: 3000 }),
+        error: () => this.snackBar.open('Failed to remove guest', 'Close', { duration: 3000 }),
+      });
     }
   }
 
