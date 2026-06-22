@@ -76,23 +76,14 @@
 .rsvp-badge.pending   { background: rgba(255,152,0,0.2);  color: #ffb74d; }
 .rsvp-badge.maybe     { background: rgba(33,150,243,0.2); color: #64b5f6; }
 
-/* ── Meal chip ───────────────────────────────────────────── */
-.meal-chip {
+/* ── Dietary chip ────────────────────────────────────────── */
+.dietary-chip {
   display: inline-block;
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.6);
+  background: rgba(255,152,0,0.12);
+  color: #ffb74d;
   border-radius: 10px;
   padding: 2px 8px;
   font-size: 12px;
-}
-
-.dietary-icon {
-  font-size: 16px !important;
-  width: 16px !important;
-  height: 16px !important;
-  color: #ffb74d;
-  vertical-align: middle;
-  margin-left: 4px;
 }
 
 /* ── Plus-one chip ───────────────────────────────────────── */

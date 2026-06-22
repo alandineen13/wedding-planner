@@ -59,19 +59,6 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Meal Preference</mat-label>
-      <mat-select [(ngModel)]="form.mealPreference" name="mealPreference">
-        <mat-option value="">Not specified</mat-option>
-        <mat-option value="chicken">Chicken</mat-option>
-        <mat-option value="beef">Beef</mat-option>
-        <mat-option value="fish">Fish</mat-option>
-        <mat-option value="vegetarian">Vegetarian</mat-option>
-        <mat-option value="vegan">Vegan</mat-option>
-        <mat-option value="kids">Kids Meal</mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
       <mat-label>Dietary Requirements</mat-label>
       <input matInput [(ngModel)]="form.dietaryRequirements" name="dietary" placeholder="Allergies, intolerances..." />
     </mat-form-field>
@@ -92,17 +79,6 @@
         <mat-form-field appearance="outline">
           <mat-label>Plus-One Name</mat-label>
           <input matInput [(ngModel)]="form.plusOneName" name="plusOneName" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Plus-One Meal</mat-label>
-          <mat-select [(ngModel)]="form.plusOneMeal" name="plusOneMeal">
-            <mat-option value="">Not specified</mat-option>
-            <mat-option value="chicken">Chicken</mat-option>
-            <mat-option value="beef">Beef</mat-option>
-            <mat-option value="fish">Fish</mat-option>
-            <mat-option value="vegetarian">Vegetarian</mat-option>
-            <mat-option value="vegan">Vegan</mat-option>
-          </mat-select>
         </mat-form-field>
       </div>
     </div>

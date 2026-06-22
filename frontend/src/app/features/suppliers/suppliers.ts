@@ -127,8 +127,4 @@ export class SuppliersComponent {
     return status;
   }
 
-  renderStars(rating?: number): string[] {
-    if (!rating) return [];
-    return Array.from({ length: 5 }, (_, i) => i < rating ? 'star' : 'star_border');
-  }
 }

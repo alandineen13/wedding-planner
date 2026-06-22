@@ -20,11 +20,9 @@ interface GuestFormData {
   group: string;
   inviteStatus: Guest['inviteStatus'];
   rsvpStatus: Guest['rsvpStatus'];
-  mealPreference: Guest['mealPreference'];
   dietaryRequirements: string;
   plusOneAllowed: boolean;
   plusOneName: string;
-  plusOneMeal: Guest['mealPreference'];
   accommodationRequired: boolean;
   transportRequired: boolean;
   notes: string;
@@ -53,11 +51,9 @@ export class GuestFormComponent implements OnInit {
     group: '',
     inviteStatus: 'not_sent',
     rsvpStatus: 'pending',
-    mealPreference: undefined,
     dietaryRequirements: '',
     plusOneAllowed: false,
     plusOneName: '',
-    plusOneMeal: undefined,
     accommodationRequired: false,
     transportRequired: false,
     notes: '',
@@ -77,11 +73,9 @@ export class GuestFormComponent implements OnInit {
         group: g.group ?? '',
         inviteStatus: g.inviteStatus,
         rsvpStatus: g.rsvpStatus,
-        mealPreference: g.mealPreference,
         dietaryRequirements: g.dietaryRequirements ?? '',
         plusOneAllowed: g.plusOneAllowed,
         plusOneName: g.plusOne?.name ?? '',
-        plusOneMeal: g.plusOne?.mealPreference,
         accommodationRequired: g.accommodationRequired ?? false,
         transportRequired: g.transportRequired ?? false,
         notes: g.notes ?? '',
@@ -103,12 +97,10 @@ export class GuestFormComponent implements OnInit {
       group: f.group || undefined,
       inviteStatus: f.inviteStatus,
       rsvpStatus: f.rsvpStatus,
-      mealPreference: f.mealPreference || undefined,
       dietaryRequirements: f.dietaryRequirements || undefined,
       plusOneAllowed: f.plusOneAllowed,
       plusOne: f.plusOneAllowed && f.plusOneName ? {
         name: f.plusOneName,
-        mealPreference: f.plusOneMeal || undefined,
       } : undefined,
       accommodationRequired: f.accommodationRequired,
       transportRequired: f.transportRequired,
