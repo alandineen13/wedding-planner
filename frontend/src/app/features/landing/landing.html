@@ -1,0 +1,83 @@
+<div class="landing-page">
+
+  <!-- Nav -->
+  <nav class="landing-nav">
+    <div class="brand">
+      <mat-icon>favorite</mat-icon>
+      <span>IDoList</span>
+    </div>
+    <a mat-stroked-button routerLink="/login" class="nav-login-btn">Log In</a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <p class="hero-eyebrow">The all-in-one wedding planning platform</p>
+      <h1 class="hero-heading">
+        Plan Your Perfect<br>
+        <span class="brand-gradient">Wedding Day</span>
+      </h1>
+      <p class="hero-sub">
+        From guest lists to seating plans, budgets to suppliers — everything you
+        need to plan your wedding, beautifully organised in one place.
+      </p>
+      <div class="hero-actions">
+        <a mat-raised-button routerLink="/login" class="cta-primary">Get Started Free</a>
+        <a mat-stroked-button href="#features" class="cta-outline">See Features</a>
+      </div>
+    </div>
+
+    <div class="hero-image-wrap">
+      <img
+        src="assets/images/pexels-amar-10840188.jpg"
+        alt="Wedding couple"
+        class="hero-img"
+      />
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section" id="features">
+    <div class="section-header">
+      <h2>Everything you need, in one place</h2>
+      <p class="section-sub">Six powerful tools built specifically for couples planning their wedding</p>
+    </div>
+
+    <div class="features-grid">
+      @for (f of features; track f.title) {
+        <div class="feature-card">
+          <div class="feature-icon-wrap">
+            <mat-icon>{{ f.icon }}</mat-icon>
+          </div>
+          <h3>{{ f.title }}</h3>
+          <p>{{ f.description }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Photo break -->
+  <section class="photo-break">
+    <img
+      src="assets/images/pexels-juris-freidenfelds-927897-7816258.jpg"
+      alt="Wedding rings on a bouquet"
+      class="break-img"
+    />
+    <div class="break-overlay">
+      <p class="break-quote">"Every detail, beautifully organised."</p>
+      <p class="break-sub">From your first guest to your last dance.</p>
+    </div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section class="bottom-cta">
+    <h2>Ready to start planning?</h2>
+    <p>Create your free account and start building your perfect wedding today.</p>
+    <a mat-raised-button routerLink="/login" class="cta-primary cta-large">Start Planning Today</a>
+  </section>
+
+  <footer class="landing-footer">
+    <span>© 2026 WeddingPlanner. All rights reserved.</span>
+  </footer>
+
+</div>
