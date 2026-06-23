@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -16,8 +16,10 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatCardModule } from '@angular/material/card';
 import { GuestService } from '../../core/services/guest.service';
+import { WeddingRsvpService } from '../../core/services/wedding-rsvp.service';
 import { Guest, RsvpStatus } from '../../shared/models/guest.model';
 import { GuestFormComponent } from './guest-form/guest-form';
+import QRCode from 'qrcode';
 
 @Component({
   selector: 'app-guests',
@@ -33,10 +35,17 @@ import { GuestFormComponent } from './guest-form/guest-form';
   templateUrl: './guests.html',
   styleUrl: './guests.css',
 })
-export class GuestsComponent {
+export class GuestsComponent implements OnInit {
   private guestSvc = inject(GuestService);
+  private weddingRsvpSvc = inject(WeddingRsvpService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+
+  rsvpCode = signal('');
+  rsvpQr = signal('');
+  readonly rsvpUrl = computed(() =>
+    this.rsvpCode() ? `${window.location.origin}/wedding-rsvp/${this.rsvpCode()}` : ''
+  );
 
   searchQuery = signal('');
   rsvpFilter = signal<RsvpStatus | ''>('');
@@ -64,6 +73,41 @@ export class GuestsComponent {
   });
 
   readonly displayedColumns = ['name', 'email', 'rsvpStatus', 'dietary', 'plusOne', 'side', 'group', 'actions'];
+
+  ngOnInit(): void {
+    this.weddingRsvpSvc.getMyCode().subscribe({
+      next: ({ code }) => this.setCode(code),
+    });
+  }
+
+  private setCode(code: string): void {
+    this.rsvpCode.set(code);
+    const url = `${window.location.origin}/wedding-rsvp/${code}`;
+    QRCode.toDataURL(url, { width: 180, margin: 2, color: { dark: '#000000', light: '#ffffff' } })
+      .then(dataUrl => this.rsvpQr.set(dataUrl));
+  }
+
+  downloadQrCode(): void {
+    const a = document.createElement('a');
+    a.href = this.rsvpQr();
+    a.download = 'wedding-rsvp-qr.png';
+    a.click();
+  }
+
+  copyWeddingRsvpLink(): void {
+    navigator.clipboard.writeText(this.rsvpUrl()).then(() => {
+      this.snackBar.open('RSVP link copied!', 'Close', { duration: 2000 });
+    });
+  }
+
+  regenerateRsvpCode(): void {
+    this.weddingRsvpSvc.regenerateCode().subscribe({
+      next: ({ code }) => {
+        this.setCode(code);
+        this.snackBar.open('New RSVP link generated', 'Close', { duration: 3000 });
+      },
+    });
+  }
 
   openAddDialog(): void {
     const ref = this.dialog.open(GuestFormComponent, { width: '600px', data: null });

@@ -26,6 +26,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/rsvp/rsvp').then(m => m.RsvpComponent),
   },
   {
+    path: 'wedding-rsvp/:code',
+    loadComponent: () => import('./features/wedding-rsvp/wedding-rsvp').then(m => m.WeddingRsvpComponent),
+  },
+  {
     path: '',
     loadComponent: () => import('./layout/app-shell/app-shell').then(m => m.AppShellComponent),
     canActivate: [authGuard],

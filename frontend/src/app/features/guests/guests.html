@@ -33,6 +33,47 @@
     </div>
   </div>
 
+  <!-- Share RSVP Link -->
+  <mat-card class="share-rsvp-card">
+    <mat-card-content>
+      <div class="share-rsvp-inner">
+        <div class="share-rsvp-info">
+          <div class="share-rsvp-title">
+            <mat-icon>qr_code</mat-icon>
+            <h3>Public RSVP Link</h3>
+          </div>
+          <p class="share-rsvp-description">
+            Share this link or QR code with your guests so they can RSVP directly. Anyone with the link can submit an RSVP.
+          </p>
+          @if (rsvpUrl()) {
+            <div class="rsvp-url-row">
+              <span class="rsvp-url-text">{{ rsvpUrl() }}</span>
+              <button mat-icon-button [matTooltip]="'Copy link'" (click)="copyWeddingRsvpLink()">
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </div>
+          }
+          <div class="share-actions">
+            <button mat-stroked-button (click)="copyWeddingRsvpLink()" [disabled]="!rsvpUrl()">
+              <mat-icon>content_copy</mat-icon> Copy Link
+            </button>
+            <button mat-stroked-button (click)="regenerateRsvpCode()" [matTooltip]="'Generate a new link (old one will stop working)'">
+              <mat-icon>refresh</mat-icon> New Link
+            </button>
+          </div>
+        </div>
+        @if (rsvpQr()) {
+          <div class="share-rsvp-qr">
+            <img [src]="rsvpQr()" alt="RSVP QR Code" width="150" height="150" />
+            <button mat-stroked-button class="qr-download-btn" (click)="downloadQrCode()">
+              <mat-icon>download</mat-icon> Download PNG
+            </button>
+          </div>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
   <!-- Filters -->
   <mat-card class="filter-card">
     <mat-card-content>

@@ -198,12 +198,19 @@
 
 .spacer { flex: 1; }
 
+::ng-deep .task-item {
+  cursor: default !important;
+  --mdc-list-list-item-hover-state-layer-opacity: 0 !important;
+  --mdc-list-list-item-hover-leading-icon-color: unset !important;
+}
+
 .task-item.overdue .priority-high,
 .task-item.overdue { color: #ef9a9a; }
 
-.priority-high   { color: #ef9a9a; }
-.priority-medium { color: #ffb74d; }
-.priority-low    { color: #81c784; }
+.priority-urgent { color: #f44336 !important; }
+.priority-high   { color: #ef9a9a !important; }
+.priority-medium { color: #ffb74d !important; }
+.priority-low    { color: #81c784 !important; }
 
 .overdue-badge {
   display: inline-block;
