@@ -1,59 +1,261 @@
-# WeddingPlanner
+# IDoList — Wedding Planner
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.29.
+A full-stack wedding planning SaaS application. Couples can manage their guest list, seating plan, budget, suppliers, and tasks from a single dashboard. Guests can RSVP via a shareable public link or QR code without needing an account.
 
-## Development server
+---
 
-To start a local development server, run:
+## Features
+
+- **Dashboard** — live overview of RSVP status, budget spend, task progress, and seating
+- **Guest Management** — full guest list with RSVP tracking, dietary requirements, and plus-ones
+- **Public RSVP Link** — shareable URL and QR code for guest self-registration; downloadable as PNG
+- **Per-guest RSVP** — individual token links for guests to update their own RSVP
+- **Seating Planner** — drag-and-assign table management with capacity enforcement
+- **Budget Tracker** — itemised budget by category with actual vs estimated cost charts
+- **Supplier Manager** — track vendors, contracts, deposits, and balances
+- **Task Checklist** — prioritised task list with due dates and status tracking
+- **Settings** — wedding date, partner name, venue, and profile management
+- **Demo Account** — pre-populated with realistic data for evaluation
+
+---
+
+## Screenshots
+
+### Login
+![Login page](documentation/wedding-planner-login-page.JPG)
+
+### Dashboard
+![Dashboard](documentation/wedding-planner-dashboard-page.JPG)
+
+### Guest List
+![Guest list](documentation/wedding-planner-guest-list-page.JPG)
+
+### Seating Planner
+![Seating planner](documentation/wedding-planner-seating-page.JPG)
+
+### Budget Tracker
+![Budget tracker](documentation/wedding-planner-budget-page.JPG)
+
+### Suppliers
+![Suppliers](documentation/wedding-planner-suppliers-page.JPG)
+
+### Tasks
+![Tasks](documentation/wedding-planner-tasks-page.JPG)
+
+---
+
+## Database Schema
+![Entity relationship diagram](documentation/wedding-planner-erd.png)
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Angular 20, Angular Material, Chart.js |
+| Backend | Node.js, Express 4 |
+| Database | PostgreSQL (Neon serverless) |
+| Auth | JWT, bcryptjs |
+| QR Codes | qrcode (client-side, no external service) |
+| API Spec | OpenAPI 3.0 |
+| Deployment | Azure Static Web Apps (frontend), Azure App Service (backend) |
+
+---
+
+## Prerequisites
+
+- Node.js 18+
+- npm 9+
+- A [Neon](https://neon.tech) PostgreSQL database (or any PostgreSQL 14+ instance)
+
+---
+
+## Getting Started
+
+### 1. Clone and install
 
 ```bash
-ng serve
+git clone <repo-url>
+cd wedding-planner
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Install backend dependencies:
 
 ```bash
-ng generate component component-name
+cd backend
+npm install
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Install frontend dependencies:
 
 ```bash
-ng generate --help
+cd ../frontend
+npm install --legacy-peer-deps
 ```
 
-## Building
+### 2. Configure the backend
 
-To build the project run:
+Create `backend/.env` from the example:
 
 ```bash
-ng build
+cp backend/.env.example backend/.env
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Fill in the values:
 
-## Running unit tests
+```env
+DATABASE_URL=your_neon_connection_string
+JWT_SECRET=a_long_random_secret
+PORT=3000
+```
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+### 3. Run database migrations
 
 ```bash
-ng test
+cd backend
+npm run migrate
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+### 4. (Optional) Seed the demo account
 
 ```bash
-ng e2e
+npm run seed
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+This creates `demo@weddingplanner.com` / `Demo1234!` with a fully populated wedding.
 
-## Additional Resources
+---
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Running Locally
+
+Start the backend (from `backend/`):
+
+```bash
+npm run dev
+```
+
+Start the frontend (from `frontend/`):
+
+```bash
+npm start
+```
+
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:4200 |
+| Backend API | http://localhost:3000/api |
+
+---
+
+## Demo Account
+
+| Field | Value |
+|---|---|
+| Email | demo@weddingplanner.com |
+| Password | Demo1234! |
+| Couple | Sarah O'Brien & James Murphy |
+| Date | 12 June 2027 |
+| Venue | Dromoland Castle, Co. Clare |
+| Budget | €28,000 |
+
+---
+
+## Project Structure
+
+```
+wedding-planner/
+├── backend/
+│   ├── src/
+│   │   ├── db/
+│   │   │   ├── migrations/     # SQL migration files (run in order)
+│   │   │   ├── client.js       # pg connection pool
+│   │   │   ├── helpers.js      # row mappers, asyncHandler
+│   │   │   ├── migrate.js      # migration runner
+│   │   │   └── seed.js         # demo data seeder
+│   │   ├── middleware/
+│   │   │   ├── auth.js         # JWT verification
+│   │   │   └── errorHandler.js
+│   │   ├── routes/
+│   │   │   ├── auth.js
+│   │   │   ├── budget.js
+│   │   │   ├── dashboard.js
+│   │   │   ├── guests.js
+│   │   │   ├── rsvp.js         # per-guest token RSVP
+│   │   │   ├── suppliers.js
+│   │   │   ├── tables.js
+│   │   │   ├── tasks.js
+│   │   │   └── weddingRsvp.js  # public shareable RSVP link
+│   │   ├── app.js
+│   │   └── index.js
+│   ├── .env.example
+│   └── package.json
+│
+├── frontend/
+│   └── src/
+│       └── app/
+│           ├── core/
+│           │   ├── auth/           # AuthService, JWT interceptor, guard
+│           │   └── services/       # GuestService, BudgetService, etc.
+│           ├── features/
+│           │   ├── dashboard/
+│           │   ├── guests/
+│           │   ├── seating/
+│           │   ├── budget/
+│           │   ├── suppliers/
+│           │   ├── tasks/
+│           │   ├── settings/
+│           │   ├── rsvp/           # per-guest RSVP page (public)
+│           │   ├── wedding-rsvp/   # shareable link RSVP page (public)
+│           │   ├── auth/           # login, register
+│           │   └── landing/
+│           ├── layout/             # app shell, nav sidebar
+│           └── shared/             # models, pipes
+│
+└── documentation/
+    ├── architecture.md
+    ├── openapi.yaml        # full API spec (OpenAPI 3.0)
+    └── erd-wedding-planner.png
+```
+
+---
+
+## API Reference
+
+The full API is documented in [`documentation/openapi.yaml`](documentation/openapi.yaml).
+
+**Base URL:** `http://localhost:3000/api`
+
+All authenticated endpoints require a `Bearer <token>` header. Tokens are issued on login and registration and expire after 7 days.
+
+Public endpoints (no auth required):
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/auth/register` | Register a new account |
+| POST | `/auth/login` | Login |
+| GET | `/rsvp/:token` | Load a per-guest RSVP form |
+| POST | `/rsvp/:token` | Submit a per-guest RSVP |
+| GET | `/wedding-rsvp/:code` | Load the public RSVP form |
+| POST | `/wedding-rsvp/:code` | Self-register as a guest via the public link |
+
+---
+
+## Public RSVP Link
+
+Each wedding has a unique shareable RSVP code. The couple can find their link and QR code in the **Guests** section of the app. Guests who submit via the public link are added directly to the guest list.
+
+The code can be regenerated at any time — the old link stops working immediately.
+
+---
+
+## Building for Production
+
+```bash
+cd frontend
+npm run build
+```
+
+Output goes to `frontend/dist/wedding-planner/`.
+
+For the backend, set `NODE_ENV=production` and ensure `DATABASE_URL` and `JWT_SECRET` are set in your hosting environment.
