@@ -1,0 +1,1015 @@
+openapi: 3.0.3
+
+info:
+  title: Wedding Planner API
+  description: REST API for the IDoList wedding planning application
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development
+  - url: https://api.weddingplanner.com/api
+    description: Production
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    # ── Auth ────────────────────────────────────────────────────
+    User:
+      type: object
+      properties:
+        id:          { type: string, format: uuid }
+        email:       { type: string, format: email }
+        name:        { type: string }
+        weddingDate: { type: string, format: date, nullable: true }
+        partnerName: { type: string, nullable: true }
+        venueName:   { type: string, nullable: true }
+
+    AuthResponse:
+      type: object
+      properties:
+        token: { type: string, description: JWT bearer token }
+        user:  { $ref: '#/components/schemas/User' }
+
+    # ── Guests ──────────────────────────────────────────────────
+    PlusOne:
+      type: object
+      properties:
+        name:                { type: string }
+        dietaryRequirements: { type: string, nullable: true }
+
+    Guest:
+      type: object
+      properties:
+        id:                   { type: string, format: uuid }
+        firstName:            { type: string }
+        lastName:             { type: string }
+        email:                { type: string, format: email, nullable: true }
+        phone:                { type: string, nullable: true }
+        address:              { type: string, nullable: true }
+        side:
+          type: string
+          enum: [bride, groom, both]
+        group:                { type: string, nullable: true }
+        inviteStatus:
+          type: string
+          enum: [not_sent, sent, delivered]
+        rsvpStatus:
+          type: string
+          enum: [pending, confirmed, declined, maybe]
+        dietaryRequirements:  { type: string, nullable: true }
+        plusOneAllowed:       { type: boolean }
+        plusOne:              { $ref: '#/components/schemas/PlusOne', nullable: true }
+        rsvpToken:            { type: string, format: uuid }
+        rsvpSubmittedAt:      { type: string, format: date-time, nullable: true }
+        accommodationRequired: { type: boolean, nullable: true }
+        transportRequired:    { type: boolean, nullable: true }
+        songRequest:          { type: string, nullable: true }
+        message:              { type: string, nullable: true }
+        notes:                { type: string, nullable: true }
+        createdAt:            { type: string, format: date-time }
+        updatedAt:            { type: string, format: date-time }
+
+    GuestWrite:
+      type: object
+      required: [firstName, lastName, side]
+      properties:
+        firstName:            { type: string }
+        lastName:             { type: string }
+        email:                { type: string, format: email }
+        phone:                { type: string }
+        address:              { type: string }
+        side:
+          type: string
+          enum: [bride, groom, both]
+        group:                { type: string }
+        inviteStatus:
+          type: string
+          enum: [not_sent, sent, delivered]
+        rsvpStatus:
+          type: string
+          enum: [pending, confirmed, declined, maybe]
+        dietaryRequirements:  { type: string }
+        plusOneAllowed:       { type: boolean }
+        plusOne:              { $ref: '#/components/schemas/PlusOne' }
+        accommodationRequired: { type: boolean }
+        transportRequired:    { type: boolean }
+        notes:                { type: string }
+
+    # ── Tables ──────────────────────────────────────────────────
+    Table:
+      type: object
+      properties:
+        id:        { type: string, format: uuid }
+        name:      { type: string }
+        capacity:  { type: integer }
+        shape:
+          type: string
+          enum: [round, rectangular, oval]
+        positionX: { type: number, nullable: true }
+        positionY: { type: number, nullable: true }
+        notes:     { type: string, nullable: true }
+        guestIds:
+          type: array
+          items: { type: string, format: uuid }
+
+    TableWrite:
+      type: object
+      required: [name, capacity]
+      properties:
+        name:      { type: string }
+        capacity:  { type: integer }
+        shape:
+          type: string
+          enum: [round, rectangular, oval]
+        positionX: { type: number }
+        positionY: { type: number }
+        notes:     { type: string }
+
+    # ── Budget ──────────────────────────────────────────────────
+    BudgetItem:
+      type: object
+      properties:
+        id:            { type: string, format: uuid }
+        weddingId:     { type: string, format: uuid }
+        name:          { type: string }
+        category:      { type: string }
+        estimatedCost: { type: number }
+        actualCost:    { type: number, nullable: true }
+        depositAmount: { type: number, nullable: true }
+        depositPaid:   { type: boolean }
+        paymentStatus:
+          type: string
+          enum: [unpaid, deposit_paid, paid]
+        supplierId:    { type: string, format: uuid, nullable: true }
+        notes:         { type: string, nullable: true }
+        dueDate:       { type: string, format: date, nullable: true }
+        createdAt:     { type: string, format: date-time }
+        updatedAt:     { type: string, format: date-time }
+
+    BudgetWrite:
+      type: object
+      required: [name, category, estimatedCost]
+      properties:
+        name:          { type: string }
+        category:      { type: string }
+        estimatedCost: { type: number }
+        actualCost:    { type: number }
+        depositAmount: { type: number }
+        depositPaid:   { type: boolean }
+        paymentStatus:
+          type: string
+          enum: [unpaid, deposit_paid, paid]
+        supplierId:    { type: string, format: uuid }
+        notes:         { type: string }
+        dueDate:       { type: string, format: date }
+
+    # ── Suppliers ───────────────────────────────────────────────
+    Supplier:
+      type: object
+      properties:
+        id:             { type: string, format: uuid }
+        name:           { type: string }
+        category:       { type: string }
+        contactName:    { type: string, nullable: true }
+        email:          { type: string, format: email, nullable: true }
+        phone:          { type: string, nullable: true }
+        website:        { type: string, nullable: true }
+        address:        { type: string, nullable: true }
+        contractStatus:
+          type: string
+          enum: [none, pending, signed]
+        contractUrl:    { type: string, nullable: true }
+        totalCost:      { type: number, nullable: true }
+        depositAmount:  { type: number, nullable: true }
+        depositPaid:    { type: boolean }
+        balanceDue:     { type: number, nullable: true }
+        balanceDueDate: { type: string, format: date, nullable: true }
+        notes:          { type: string, nullable: true }
+        createdAt:      { type: string, format: date-time }
+        updatedAt:      { type: string, format: date-time }
+
+    SupplierWrite:
+      type: object
+      required: [name, category]
+      properties:
+        name:           { type: string }
+        category:       { type: string }
+        contactName:    { type: string }
+        email:          { type: string, format: email }
+        phone:          { type: string }
+        website:        { type: string }
+        address:        { type: string }
+        contractStatus:
+          type: string
+          enum: [none, pending, signed]
+        contractUrl:    { type: string }
+        totalCost:      { type: number }
+        depositAmount:  { type: number }
+        depositPaid:    { type: boolean }
+        balanceDue:     { type: number }
+        balanceDueDate: { type: string, format: date }
+        notes:          { type: string }
+
+    # ── Tasks ───────────────────────────────────────────────────
+    Task:
+      type: object
+      properties:
+        id:          { type: string, format: uuid }
+        title:       { type: string }
+        description: { type: string, nullable: true }
+        category:    { type: string }
+        status:
+          type: string
+          enum: [todo, in_progress, completed, cancelled]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        dueDate:     { type: string, format: date, nullable: true }
+        assignedTo:  { type: string, nullable: true }
+        supplierId:  { type: string, format: uuid, nullable: true }
+        notes:       { type: string, nullable: true }
+        completedAt: { type: string, format: date-time, nullable: true }
+        createdAt:   { type: string, format: date-time }
+        updatedAt:   { type: string, format: date-time }
+
+    TaskWrite:
+      type: object
+      required: [title, category]
+      properties:
+        title:       { type: string }
+        description: { type: string }
+        category:    { type: string }
+        status:
+          type: string
+          enum: [todo, in_progress, completed, cancelled]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        dueDate:    { type: string, format: date }
+        assignedTo: { type: string }
+        supplierId: { type: string, format: uuid }
+        notes:      { type: string }
+
+    # ── Dashboard ───────────────────────────────────────────────
+    DashboardStats:
+      type: object
+      properties:
+        guestStats:
+          type: object
+          properties:
+            total:     { type: integer }
+            confirmed: { type: integer }
+            declined:  { type: integer }
+            pending:   { type: integer }
+            maybe:     { type: integer }
+            plusOnes:  { type: integer }
+        budgetSummary:
+          type: object
+          properties:
+            totalBudget:      { type: number }
+            totalEstimated:   { type: number }
+            totalActual:      { type: number }
+            totalPaid:        { type: number }
+            totalOutstanding: { type: number }
+            variance:         { type: number }
+        taskStats:
+          type: object
+          properties:
+            total:      { type: integer }
+            completed:  { type: integer }
+            inProgress: { type: integer }
+            todo:       { type: integer }
+            overdue:    { type: integer }
+        seatingStats:
+          type: object
+          properties:
+            totalTables:   { type: integer }
+            totalSeats:    { type: integer }
+            seatedGuests:  { type: integer }
+            unseatedSeats: { type: integer }
+        daysUntilWedding: { type: integer, nullable: true }
+
+    # ── Public RSVP ─────────────────────────────────────────────
+    WeddingPublicInfo:
+      type: object
+      properties:
+        userName:    { type: string }
+        partnerName: { type: string, nullable: true }
+        weddingDate: { type: string, format: date, nullable: true }
+        venueName:   { type: string, nullable: true }
+
+    # ── Errors ──────────────────────────────────────────────────
+    Error:
+      type: object
+      properties:
+        message: { type: string }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid JWT token
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+# ══════════════════════════════════════════════════════════════════
+# Paths
+# ══════════════════════════════════════════════════════════════════
+paths:
+
+  # ── Auth ──────────────────────────────────────────────────────
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, name]
+              properties:
+                email:    { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                name:     { type: string }
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409':
+          description: Email already in use
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:    { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the authenticated user's profile
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    put:
+      tags: [Auth]
+      summary: Update name and wedding details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:        { type: string }
+                weddingDate: { type: string, format: date }
+                partnerName: { type: string }
+                venueName:   { type: string }
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ── Dashboard ─────────────────────────────────────────────────
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Get aggregated stats for the current wedding
+      responses:
+        '200':
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DashboardStats' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ── Guests ────────────────────────────────────────────────────
+  /guests:
+    get:
+      tags: [Guests]
+      summary: List all guests for the current wedding
+      responses:
+        '200':
+          description: Array of guests
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Guest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Guests]
+      summary: Add a new guest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GuestWrite' }
+      responses:
+        '201':
+          description: Guest created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Guest' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /guests/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Guests]
+      summary: Get a single guest by ID
+      responses:
+        '200':
+          description: Guest record
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Guest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Guests]
+      summary: Update a guest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GuestWrite' }
+      responses:
+        '200':
+          description: Updated guest
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Guest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Guests]
+      summary: Remove a guest
+      responses:
+        '204': { description: Guest deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ── Per-guest RSVP (token link) ───────────────────────────────
+  /rsvp/{token}:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+        description: Per-guest RSVP token (from guest record)
+    get:
+      tags: [RSVP]
+      summary: Get guest info for an individual RSVP link (public)
+      security: []
+      responses:
+        '200':
+          description: Guest RSVP details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  firstName:            { type: string }
+                  lastName:             { type: string }
+                  rsvpStatus:           { type: string }
+                  dietaryRequirements:  { type: string, nullable: true }
+                  plusOneAllowed:       { type: boolean }
+                  plusOne:              { $ref: '#/components/schemas/PlusOne', nullable: true }
+                  songRequest:          { type: string, nullable: true }
+                  message:              { type: string, nullable: true }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [RSVP]
+      summary: Submit an RSVP via the individual guest link (public)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rsvpStatus:
+                  type: string
+                  enum: [confirmed, declined, maybe]
+                dietaryRequirements: { type: string }
+                songRequest:         { type: string }
+                message:             { type: string }
+                plusOne:             { $ref: '#/components/schemas/PlusOne' }
+      responses:
+        '200':
+          description: RSVP submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ── Public Wedding RSVP (couple's shareable link) ─────────────
+  /wedding-rsvp/mine:
+    get:
+      tags: [Wedding RSVP]
+      summary: Get the couple's shareable RSVP code (generates one if missing)
+      responses:
+        '200':
+          description: RSVP code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: string, example: a3f8c12e90 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /wedding-rsvp/mine/regenerate:
+    post:
+      tags: [Wedding RSVP]
+      summary: Regenerate the shareable RSVP code (invalidates the old link)
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: New RSVP code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: string, example: b9e1d44f02 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /wedding-rsvp/{code}:
+    parameters:
+      - name: code
+        in: path
+        required: true
+        schema: { type: string }
+        description: 10-character hex code from the couple's shareable link
+    get:
+      tags: [Wedding RSVP]
+      summary: Get wedding display info for the public RSVP form (public)
+      security: []
+      responses:
+        '200':
+          description: Wedding info shown at the top of the public RSVP page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeddingPublicInfo' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Wedding RSVP]
+      summary: Submit an RSVP and self-register as a guest (public)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [firstName, lastName]
+              properties:
+                firstName:           { type: string }
+                lastName:            { type: string }
+                email:               { type: string, format: email }
+                rsvpStatus:
+                  type: string
+                  enum: [confirmed, declined]
+                  default: confirmed
+                dietaryRequirements: { type: string }
+                message:             { type: string }
+      responses:
+        '201':
+          description: RSVP submitted — guest record created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ── Seating Tables ────────────────────────────────────────────
+  /tables:
+    get:
+      tags: [Seating]
+      summary: List all tables with their seated guest IDs
+      responses:
+        '200':
+          description: Array of tables
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Table' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Seating]
+      summary: Create a new table
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TableWrite' }
+      responses:
+        '201':
+          description: Table created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Table' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /tables/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    put:
+      tags: [Seating]
+      summary: Update a table
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TableWrite' }
+      responses:
+        '200':
+          description: Updated table
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Table' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Seating]
+      summary: Delete a table (seating assignments are cascade-deleted)
+      responses:
+        '204': { description: Table deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /tables/{id}/assign-guest:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [Seating]
+      summary: Assign a guest to this table (moves from any previous table)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [guestId]
+              properties:
+                guestId: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Updated table with new seating
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Table' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Table is at full capacity
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /tables/{id}/guests/{guestId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - name: guestId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      tags: [Seating]
+      summary: Remove a guest from a table without deleting the guest
+      responses:
+        '200':
+          description: Updated table
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Table' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ── Budget ────────────────────────────────────────────────────
+  /budget:
+    get:
+      tags: [Budget]
+      summary: Get total budget and all budget items
+      responses:
+        '200':
+          description: Budget overview
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalBudget: { type: number }
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/BudgetItem' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Budget]
+      summary: Add a new budget item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BudgetWrite' }
+      responses:
+        '201':
+          description: Budget item created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetItem' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /budget/settings:
+    put:
+      tags: [Budget]
+      summary: Update the total wedding budget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [totalBudget]
+              properties:
+                totalBudget: { type: number, minimum: 0 }
+      responses:
+        '200':
+          description: Updated total budget
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalBudget: { type: number }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /budget/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    put:
+      tags: [Budget]
+      summary: Update a budget item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BudgetWrite' }
+      responses:
+        '200':
+          description: Updated budget item
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetItem' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Budget]
+      summary: Delete a budget item
+      responses:
+        '204': { description: Budget item deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ── Suppliers ─────────────────────────────────────────────────
+  /suppliers:
+    get:
+      tags: [Suppliers]
+      summary: List all suppliers for the current wedding
+      responses:
+        '200':
+          description: Array of suppliers
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Supplier' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Suppliers]
+      summary: Add a new supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SupplierWrite' }
+      responses:
+        '201':
+          description: Supplier created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Supplier' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /suppliers/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Suppliers]
+      summary: Get a single supplier
+      responses:
+        '200':
+          description: Supplier record
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Supplier' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Suppliers]
+      summary: Update a supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SupplierWrite' }
+      responses:
+        '200':
+          description: Updated supplier
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Supplier' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Suppliers]
+      summary: Delete a supplier
+      responses:
+        '204': { description: Supplier deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ── Tasks ─────────────────────────────────────────────────────
+  /tasks:
+    get:
+      tags: [Tasks]
+      summary: List all tasks for the current wedding
+      responses:
+        '200':
+          description: Array of tasks ordered by due date
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Task' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Tasks]
+      summary: Create a new task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskWrite' }
+      responses:
+        '201':
+          description: Task created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /tasks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    put:
+      tags: [Tasks]
+      summary: Update a task (setting status to completed auto-stamps completedAt)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskWrite' }
+      responses:
+        '200':
+          description: Updated task
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Tasks]
+      summary: Delete a task
+      responses:
+        '204': { description: Task deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+tags:
+  - name: Auth
+    description: Registration, login, and profile management
+  - name: Dashboard
+    description: Aggregated statistics for the current wedding
+  - name: Guests
+    description: Guest list management
+  - name: RSVP
+    description: Per-guest RSVP via individual token links
+  - name: Wedding RSVP
+    description: Public shareable link for guest self-registration
+  - name: Seating
+    description: Seating tables and guest assignments
+  - name: Budget
+    description: Budget tracking and items
+  - name: Suppliers
+    description: Supplier and vendor management
+  - name: Tasks
+    description: Wedding task checklist

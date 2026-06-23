@@ -1,0 +1,102 @@
+<div class="rsvp-page">
+
+  @if (loadError()) {
+    <div class="state-card error-state">
+      <mat-icon>link_off</mat-icon>
+      <h2>Invalid RSVP Link</h2>
+      <p>{{ loadError() }}</p>
+    </div>
+
+  } @else if (!wedding()) {
+    <div class="state-card loading-state">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+
+  } @else if (submitted()) {
+    <div class="state-card success-state">
+      <mat-icon>favorite</mat-icon>
+      <h2>Thank you!</h2>
+      <p>Your RSVP has been received. We look forward to celebrating with you!</p>
+    </div>
+
+  } @else {
+    <div class="rsvp-card">
+      <div class="rsvp-header">
+        <mat-icon class="heart-icon">favorite</mat-icon>
+        <h1>{{ coupleName() }}</h1>
+        <p class="subtitle">invite you to celebrate their wedding</p>
+        @if (wedding()?.weddingDate) {
+          <p class="wedding-meta"><mat-icon>calendar_today</mat-icon> {{ wedding()!.weddingDate | date: 'MMMM d, y' }}</p>
+        }
+        @if (wedding()?.venueName) {
+          <p class="wedding-meta"><mat-icon>location_on</mat-icon> {{ wedding()!.venueName }}</p>
+        }
+      </div>
+
+      <div class="rsvp-form">
+        <h2>Your RSVP</h2>
+
+        <div class="name-row">
+          <mat-form-field appearance="outline">
+            <mat-label>First Name</mat-label>
+            <input matInput [ngModel]="firstName()" (ngModelChange)="firstName.set($event)" required />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Last Name</mat-label>
+            <input matInput [ngModel]="lastName()" (ngModelChange)="lastName.set($event)" required />
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email (optional)</mat-label>
+          <mat-icon matPrefix>mail_outline</mat-icon>
+          <input matInput type="email" [ngModel]="email()" (ngModelChange)="email.set($event)" />
+        </mat-form-field>
+
+        <div class="attending-section">
+          <p class="attending-label">Will you be attending?</p>
+          <mat-radio-group class="attending-group" [ngModel]="attending()" (ngModelChange)="attending.set($event)">
+            <mat-radio-button value="confirmed">
+              <span class="radio-label yes">Yes, I'll be there!</span>
+            </mat-radio-button>
+            <mat-radio-button value="declined">
+              <span class="radio-label no">Sorry, I can't make it</span>
+            </mat-radio-button>
+          </mat-radio-group>
+        </div>
+
+        @if (attending() === 'confirmed') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Dietary Requirements (optional)</mat-label>
+            <mat-icon matPrefix>restaurant</mat-icon>
+            <input matInput [ngModel]="dietaryRequirements()" (ngModelChange)="dietaryRequirements.set($event)" placeholder="e.g. vegetarian, gluten-free, nut allergy..." />
+          </mat-form-field>
+        }
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Message to the couple (optional)</mat-label>
+          <mat-icon matPrefix>message</mat-icon>
+          <textarea matInput rows="3" [ngModel]="message()" (ngModelChange)="message.set($event)" placeholder="Share your well wishes..."></textarea>
+        </mat-form-field>
+
+        @if (submitError()) {
+          <p class="submit-error">{{ submitError() }}</p>
+        }
+
+        <button
+          mat-flat-button
+          class="submit-btn"
+          (click)="onSubmit()"
+          [disabled]="!firstName() || !lastName() || submitting()"
+        >
+          @if (submitting()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <ng-container><mat-icon>send</mat-icon> Send RSVP</ng-container>
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+</div>

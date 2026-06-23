@@ -163,7 +163,7 @@
       } @else {
         <mat-list>
           @for (task of upcomingTasks(); track task.id) {
-            <mat-list-item class="task-item" [class.overdue]="isOverdue(task.dueDate)">
+            <mat-list-item class="task-item" [class.overdue]="isOverdue(task.dueDate)" disableRipple>
               <mat-icon matListItemIcon [class]="'priority-' + task.priority">
                 {{ task.status === 'in_progress' ? 'pending' : 'radio_button_unchecked' }}
               </mat-icon>
