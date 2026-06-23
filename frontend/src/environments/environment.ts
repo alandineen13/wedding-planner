@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3000/api',
+  apiUrl: 'https://api-wedding-planner-cjh9avbdb0hsd4gf.westeurope-01.azurewebsites.net/api',
 };
