@@ -1,3 +1,103 @@
+/* ── Share RSVP card ──────────────────────────────────────── */
+.share-rsvp-card {
+  margin-bottom: 20px;
+  background: rgba(139, 74, 98, 0.12) !important;
+  border: 1px solid rgba(139, 74, 98, 0.35) !important;
+}
+
+.share-rsvp-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+  justify-content: space-between;
+}
+
+.share-rsvp-info {
+  flex: 1;
+}
+
+.share-rsvp-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.share-rsvp-title mat-icon {
+  color: #e91e8c;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.share-rsvp-title h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.87);
+  margin: 0;
+}
+
+.share-rsvp-description {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+
+.rsvp-url-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+}
+
+.rsvp-url-text {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: monospace;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.share-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.share-rsvp-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.share-rsvp-qr img {
+  border-radius: 8px;
+  border: 3px solid rgba(255, 255, 255, 0.12);
+}
+
+.qr-download-btn {
+  font-size: 0.75rem;
+  padding: 0 10px;
+  height: 30px;
+  line-height: 30px;
+}
+
+@media (max-width: 600px) {
+  .share-rsvp-inner {
+    flex-direction: column-reverse;
+    align-items: center;
+  }
+}
+
 /* ── Stats strip ─────────────────────────────────────────── */
 .stats-strip {
   display: flex !important;

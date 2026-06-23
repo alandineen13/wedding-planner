@@ -40,8 +40,9 @@ export class SeatingComponent {
 
   readonly unassignedGuests = computed(() => {
     const q = this.guestSearchQuery().toLowerCase();
+    const assignedIds = new Set(this.tables().flatMap(t => t.guestIds));
     return this.allGuests()
-      .filter(g => g.rsvpStatus === 'confirmed' && !g.tableId)
+      .filter(g => g.rsvpStatus === 'confirmed' && !assignedIds.has(g.id))
       .filter(g => !q || `${g.firstName} ${g.lastName}`.toLowerCase().includes(q));
   });
 
@@ -60,34 +61,36 @@ export class SeatingComponent {
       capacity: this.newTableCapacity(),
       shape: this.newTableShape(),
       guestIds: [],
+    }).subscribe({
+      next: () => {
+        this.newTableName.set('');
+        this.newTableCapacity.set(10);
+        this.showAddTable.set(false);
+        this.snackBar.open('Table added', 'Close', { duration: 2000 });
+      },
+      error: () => this.snackBar.open('Failed to add table', 'Close', { duration: 2000 }),
     });
-    this.newTableName.set('');
-    this.newTableCapacity.set(10);
-    this.showAddTable.set(false);
-    this.snackBar.open('Table added', 'Close', { duration: 2000 });
   }
 
   deleteTable(tableId: string): void {
-    const table = this.tables().find(t => t.id === tableId);
-    if (!table) return;
-    table.guestIds.forEach(gid => this.guestSvc.update(gid, { tableId: undefined }));
-    this.seatingSvc.delete(tableId);
+    this.seatingSvc.delete(tableId).subscribe({
+      error: () => this.snackBar.open('Failed to delete table', 'Close', { duration: 2000 }),
+    });
   }
 
   assignGuest(tableId: string, guestId: string): void {
-    const table = this.tables().find(t => t.id === tableId);
-    if (!table || table.guestIds.length >= table.capacity) {
-      this.snackBar.open('Table is full!', 'Close', { duration: 2000 });
-      return;
-    }
-    this.seatingSvc.assignGuest(tableId, guestId);
-    this.guestSvc.update(guestId, { tableId });
-    this.snackBar.open('Guest assigned to table', 'Close', { duration: 2000 });
+    this.seatingSvc.assignGuest(tableId, guestId).subscribe({
+      next: () => this.snackBar.open('Guest assigned to table', 'Close', { duration: 2000 }),
+      error: (err) => this.snackBar.open(err?.error?.message ?? 'Table is full or guest already assigned', 'Close', { duration: 2000 }),
+    });
   }
 
   removeFromTable(guestId: string): void {
-    this.seatingSvc.removeGuest(guestId);
-    this.guestSvc.update(guestId, { tableId: undefined });
+    const table = this.tables().find(t => t.guestIds.includes(guestId));
+    if (!table) return;
+    this.seatingSvc.removeGuest(table.id, guestId).subscribe({
+      error: () => this.snackBar.open('Failed to remove guest', 'Close', { duration: 2000 }),
+    });
   }
 
   selectTable(id: string | null): void {

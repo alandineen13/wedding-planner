@@ -84,13 +84,16 @@ export class SuppliersComponent {
       notes: this.formData.notes || undefined,
     };
     if (this.editingId()) {
-      this.supplierSvc.update(this.editingId()!, supplier);
-      this.snackBar.open('Supplier updated', 'Close', { duration: 2000 });
+      this.supplierSvc.update(this.editingId()!, supplier).subscribe({
+        next: () => { this.snackBar.open('Supplier updated', 'Close', { duration: 2000 }); this.resetForm(); },
+        error: () => this.snackBar.open('Failed to save supplier', 'Close', { duration: 2000 }),
+      });
     } else {
-      this.supplierSvc.add(supplier);
-      this.snackBar.open('Supplier added', 'Close', { duration: 2000 });
+      this.supplierSvc.add(supplier).subscribe({
+        next: () => { this.snackBar.open('Supplier added', 'Close', { duration: 2000 }); this.resetForm(); },
+        error: () => this.snackBar.open('Failed to add supplier', 'Close', { duration: 2000 }),
+      });
     }
-    this.resetForm();
   }
 
   editSupplier(supplier: Supplier): void {
@@ -113,7 +116,9 @@ export class SuppliersComponent {
 
   deleteSupplier(id: string): void {
     if (confirm('Remove this supplier?')) {
-      this.supplierSvc.delete(id);
+      this.supplierSvc.delete(id).subscribe({
+        error: () => this.snackBar.open('Failed to delete supplier', 'Close', { duration: 2000 }),
+      });
     }
   }
 

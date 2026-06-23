@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diagram version="1" name="ERD-wedding-planner.erd">
+	<entities>
+		<data-source id="postgres-jdbc-19ef101460a-379245267945808b">
+			<entity id="1" name="budget_items" fq-name="public.budget_items" order="0" x="40" y="40">
+				<path name="public"/>
+				<path name="neondb"/>
+			</entity>
+			<entity id="2" name="guests" fq-name="public.guests" order="1" x="249" y="723">
+				<path name="public"/>
+				<path name="neondb"/>
+			</entity>
+			<entity id="3" name="seating_assignments" fq-name="public.seating_assignments" order="2" x="40" y="1155">
+				<path name="public"/>
+				<path name="neondb"/>
+			</entity>
+			<entity id="4" name="suppliers" fq-name="public.suppliers" order="3" x="249" y="238">
+				<path name="public"/>
+				<path name="neondb"/>
+			</entity>
+			<entity id="5" name="tables" fq-name="public.&quot;tables&quot;" order="4" x="249" y="1307">
+				<path name="public"/>
+				<path name="neondb"/>
+			</entity>
+			<entity id="6" name="tasks" fq-name="public.tasks" order="5" x="40" y="515">
+				<path name="public"/>
+				<path name="neondb"/>
+			</entity>
+			<entity id="7" name="users" fq-name="public.users" order="6" x="692" y="605">
+				<path name="public"/>
+				<path name="neondb"/>
+			</entity>
+			<entity id="8" name="weddings" fq-name="public.weddings" order="7" x="502" y="575">
+				<path name="public"/>
+				<path name="neondb"/>
+			</entity>
+		</data-source>
+	</entities>
+	<relations>
+		<relation name="seating_assignments_guest_id_fkey" fq-name="public.seating_assignments.seating_assignments_guest_id_fkey" type="fk" pk-ref="2" fk-ref="3"/>
+		<relation name="budget_items_supplier_id_fkey" fq-name="public.budget_items.budget_items_supplier_id_fkey" type="fk" pk-ref="4" fk-ref="1"/>
+		<relation name="tasks_supplier_id_fkey" fq-name="public.tasks.tasks_supplier_id_fkey" type="fk" pk-ref="4" fk-ref="6"/>
+		<relation name="seating_assignments_table_id_fkey" fq-name="public.seating_assignments.seating_assignments_table_id_fkey" type="fk" pk-ref="5" fk-ref="3"/>
+		<relation name="weddings_user_id_fkey" fq-name="public.weddings.weddings_user_id_fkey" type="fk" pk-ref="7" fk-ref="8"/>
+		<relation name="budget_items_wedding_id_fkey" fq-name="public.budget_items.budget_items_wedding_id_fkey" type="fk" pk-ref="8" fk-ref="1"/>
+		<relation name="guests_wedding_id_fkey" fq-name="public.guests.guests_wedding_id_fkey" type="fk" pk-ref="8" fk-ref="2"/>
+		<relation name="suppliers_wedding_id_fkey" fq-name="public.suppliers.suppliers_wedding_id_fkey" type="fk" pk-ref="8" fk-ref="4"/>
+		<relation name="tables_wedding_id_fkey" fq-name="public.&quot;tables&quot;.tables_wedding_id_fkey" type="fk" pk-ref="8" fk-ref="5"/>
+		<relation name="tasks_wedding_id_fkey" fq-name="public.tasks.tasks_wedding_id_fkey" type="fk" pk-ref="8" fk-ref="6"/>
+	</relations>
+</diagram>

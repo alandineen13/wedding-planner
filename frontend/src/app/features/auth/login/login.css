@@ -97,15 +97,43 @@ mat-card-content form {
 .error-message mat-icon { font-size: 18px; width: 18px; height: 18px; }
 
 .demo-hint {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   margin-top: 20px;
-  padding: 12px;
-  background: rgba(92,107,192,0.15);
+  padding: 14px 16px;
+  background: rgba(232,164,184,0.1);
+  border: 1px solid rgba(232,164,184,0.25);
   border-radius: 8px;
   font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  text-align: center;
+}
+
+.demo-hint p { margin: 2px 0; }
+
+.demo-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #e8a4b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px !important;
+}
+
+.demo-label mat-icon { font-size: 14px; width: 14px; height: 14px; }
+
+.switch-link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
   color: rgba(255,255,255,0.6);
 }
 
-.demo-hint mat-icon { font-size: 16px; width: 16px; height: 16px; color: #7986cb; }
+.switch-link a {
+  color: #e8a4b8;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.switch-link a:hover { text-decoration: underline; }
