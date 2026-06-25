@@ -59,7 +59,9 @@ A full-stack wedding planning SaaS application. Couples can manage their guest l
 | Auth | JWT, bcryptjs |
 | QR Codes | qrcode (client-side, no external service) |
 | API Spec | OpenAPI 3.0 |
-| Deployment | Azure Static Web Apps (frontend), Azure App Service (backend) |
+| Deployment Frontend | Azure Static Web Apps |
+| Deployment Backend | Azure App Service |
+| DNS | Cloudflare |
 
 ---
 
@@ -143,8 +145,8 @@ npm start
 
 | Service | URL |
 |---|---|
-| Frontend | http://localhost:4200 |
-| Backend API | http://localhost:3000/api |
+| Frontend | https://wedding-planner.alandineen.dev |
+| Backend API | https://api-wedding-planner-cjh9avbdb0hsd4gf.westeurope-01.azurewebsites.net |
 
 ---
 
