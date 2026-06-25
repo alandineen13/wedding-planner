@@ -44,7 +44,8 @@ jobs:
           github_id_token: ${{ steps.idtoken.outputs.result }}
 
   close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    #if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    if: false # disabled
     runs-on: ubuntu-latest
     name: Close Pull Request Job
     steps:
