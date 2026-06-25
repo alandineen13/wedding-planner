@@ -62,6 +62,7 @@ A full-stack wedding planning SaaS application. Couples can manage their guest l
 | Deployment Frontend | Azure Static Web Apps |
 | Deployment Backend | Azure App Service |
 | DNS | Cloudflare |
+| CI/CD | GitHub Actions |
 
 ---
 
